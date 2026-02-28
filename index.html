@@ -2401,7 +2401,8 @@ function handleAnswer(qIndex, chosenIdx, btnEl) {
   }
 
   // Update stats
-  if (!state.questionStats[qIndex]) state.questionStats[qIndex] = { right: 0, wrong: 0 };
+  if (!state.questionStats[qIndex]) state.questionStats[qIndex] = { right: 0, wrong: 0, consecutiveRight: 0 };
+  if (state.questionStats[qIndex].consecutiveRight === undefined) state.questionStats[qIndex].consecutiveRight = 0;
 
   if (isCorrect) {
     state.correct++;
@@ -2409,11 +2410,12 @@ function handleAnswer(qIndex, chosenIdx, btnEl) {
     if (state.streak > state.bestStreak) state.bestStreak = state.streak;
     state.tugStreak = Math.min(STREAK_MAX, state.tugStreak + 1);
     state.questionStats[qIndex].right++;
+    state.questionStats[qIndex].consecutiveRight++;
 
-    // Master after 3 correct
-    if (state.questionStats[qIndex].right >= 3 && !state.mastered[qIndex]) {
+    // Master after 3 correct IN A ROW
+    if (state.questionStats[qIndex].consecutiveRight >= 3 && !state.mastered[qIndex]) {
       state.mastered[qIndex] = true;
-      showToast('🎯', 'Question Mastered!', 'You\'ve nailed this one 3 times!');
+      showToast('🎯', 'Question Mastered!', '3 correct in a row!');
       showMasteryCelebration();
     }
 
@@ -2443,6 +2445,7 @@ function handleAnswer(qIndex, chosenIdx, btnEl) {
     state.streak = 0;
     state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
     state.questionStats[qIndex].wrong++;
+    state.questionStats[qIndex].consecutiveRight = 0;
 
     // Lose the full cost of the upgrade you were trying to buy
     const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
