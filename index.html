@@ -1,3 +1,10 @@
+<!-- TODO: 1. make seasonal colors change gradually as you get about 15% away from the next season
+ 2. figure out if hot streak bonus carries over?
+4.  add numbered keyboard for answering questions in quiz mode
+ 3. change summer poopup to modal rather than browser alert
+ 5. figure out end game condition and add some kind of "you win" celebration
+  -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +22,14 @@
     color: #fff;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 2s ease;
+    padding-bottom: 130px;
   }
+
+  body.season-fall   { background: linear-gradient(135deg, #1a0f00 0%, #2d1810 50%, #3d2415 100%); }
+  body.season-winter { background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #2a3a5a 100%); }
+  body.season-spring { background: linear-gradient(135deg, #0a1a10 0%, #1a3028 50%, #1f4030 100%); }
+  body.season-summer { background: linear-gradient(135deg, #2d1f00 0%, #4a3000 50%, #5a4010 100%); }
 
   /* === HEADER === */
   header {
@@ -242,11 +256,19 @@
 
   .prestige-section {
     text-align: center;
-    padding: 10px 20px 20px;
+    padding: 10px 20px 14px;
     max-width: 500px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    background: rgba(10, 12, 20, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px 14px 0 0;
+    width: 100%;
   }
 
   .prestige-progress {
@@ -416,6 +438,9 @@
   .shop-section {
     flex: 1 1 360px;
     max-width: 420px;
+    max-height: 45vh;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .section-title {
@@ -456,10 +481,20 @@
   .shop-item .cost { font-family: 'Fredoka One', cursive; color: #4ecdc4; font-size: 0.92em; white-space: nowrap; }
   .shop-item .owned { font-size: 0.72em; color: #8da9c4; }
 
+  .shop-section::-webkit-scrollbar,
+  .achievements-section::-webkit-scrollbar { width: 5px; }
+  .shop-section::-webkit-scrollbar-thumb,
+  .achievements-section::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+  .shop-section::-webkit-scrollbar-track,
+  .achievements-section::-webkit-scrollbar-track { background: transparent; }
+
   /* === ACHIEVEMENTS === */
   .achievements-section {
     flex: 1 1 320px;
     max-width: 380px;
+    max-height: 45vh;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .ach-grid {
@@ -707,6 +742,111 @@
   @keyframes particleDrift {
     0% { transform: translateY(0) rotate(0deg); opacity: 0.12; }
     100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* Burst particles for season transitions */
+  @keyframes burstOut {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+    15%  { opacity: 1; transform: translate(var(--bx), var(--by)) scale(1.2) rotate(60deg); }
+    60%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(calc(var(--bx) * 2.5), calc(var(--by) * 2.5)) scale(0.3) rotate(360deg); }
+  }
+  .burst-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    font-size: 28px;
+    animation: burstOut ease-out forwards;
+  }
+
+  /* === AMBIENT SEASON EFFECTS === */
+  .ambient {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Snowflakes */
+  .ambient-snow {
+    color: #fff;
+    font-size: 14px;
+    opacity: 0;
+    top: -20px;
+    animation: snowFall linear forwards;
+  }
+  @keyframes snowFall {
+    0%   { opacity: 0; transform: translateX(0) rotate(0deg); }
+    5%   { opacity: 0.7; }
+    100% { opacity: 0; transform: translateX(var(--drift)) rotate(360deg); top: 105vh; }
+  }
+
+  /* Leaves */
+  .ambient-leaf {
+    font-size: 18px;
+    opacity: 0;
+    top: -20px;
+    animation: leafFall linear forwards;
+  }
+  @keyframes leafFall {
+    0%   { opacity: 0; transform: translateX(0) rotate(0deg); }
+    5%   { opacity: 0.6; }
+    50%  { transform: translateX(var(--drift)) rotate(180deg); }
+    100% { opacity: 0; transform: translateX(calc(var(--drift) * -0.5)) rotate(360deg); top: 105vh; }
+  }
+
+  /* Birds */
+  .ambient-bird {
+    font-size: 16px;
+    opacity: 0;
+    animation: birdFly linear forwards;
+  }
+  @keyframes birdFly {
+    0%   { opacity: 0; transform: translateX(0) translateY(0); }
+    10%  { opacity: 0.6; }
+    50%  { transform: translateX(var(--fly-x)) translateY(var(--fly-dip)); }
+    90%  { opacity: 0.5; }
+    100% { opacity: 0; transform: translateX(calc(var(--fly-x) * 2)) translateY(var(--fly-end)); }
+  }
+
+  /* === SEASON BANNER === */
+  .season-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    pointer-events: none;
+    animation: seasonBannerFade 2.5s ease forwards;
+  }
+  .season-banner-inner {
+    text-align: center;
+    transform: scale(0.5);
+    animation: seasonBannerPop 2.5s ease forwards;
+  }
+  .season-banner-emoji {
+    font-size: 4em;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .season-banner-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5em;
+    color: #fff;
+    text-shadow: 0 0 30px rgba(0,0,0,0.7), 0 0 60px rgba(0,0,0,0.4);
+  }
+  @keyframes seasonBannerFade {
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    70%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes seasonBannerPop {
+    0%   { transform: scale(0.5); }
+    15%  { transform: scale(1.1); }
+    25%  { transform: scale(1); }
+    70%  { transform: scale(1); }
+    100% { transform: scale(0.8); }
   }
 
   /* === TUG-OF-WAR BAR === */
@@ -1053,7 +1193,7 @@
 
 <header>
   <h1>PEL Clicker</h1>
-  <div class="year-badge" id="yearBadge">Year 1 — Semester 1</div>
+  <div class="year-badge" id="yearBadge">Year 1 — 🍂 Fall</div>
   <div class="stats-bar">
     <span>Questions Correct: <span class="stat-val" id="statCorrect">0</span></span>
     <span>Accuracy: <span class="stat-val" id="statAccuracy">--%</span></span>
@@ -1141,13 +1281,13 @@
 <div class="prestige-section" id="prestigeSection">
   <div class="prestige-progress">
     <div class="prestige-progress-fill" id="prestigeFill"></div>
-    <div class="prestige-progress-text" id="prestigeProgressText">0 / 500K</div>
+    <div class="prestige-progress-text" id="prestigeProgressText">0 / 150K → Winter ❄️</div>
   </div>
   <button class="prestige-btn" id="prestigeBtn" disabled>
     ☀️ Summer Vacation
   </button>
   <div class="prestige-desc" id="prestigeDesc">Reach 500K total PEL bux to prestige</div>
-  <div class="prestige-desc" style="margin-top:2px; color:#6b7a8d; font-size:0.72em;">Resets: PEL bux, upgrades, achievements &nbsp;|&nbsp; Keeps: study progress, mastered questions &nbsp;|&nbsp; Gain: permanent multiplier on all earnings</div>
+  <!-- <div class="prestige-desc" style="margin-top:2px; color:#6b7a8d; font-size:0.72em;">Resets: PEL bux, upgrades, achievements &nbsp;|&nbsp; Keeps: study progress, mastered questions &nbsp;|&nbsp; Gain: permanent multiplier on all earnings</div> -->
 </div>
 
 <!-- QUIZ MODAL -->
@@ -2579,7 +2719,6 @@ function showToast(icon, title, desc) {
 // ========================================================
 // PRESTIGE
 // ========================================================
-const SEMESTER_COST = 250000;
 const PRESTIGE_COST = 500000;
 const prestigeBtn = document.getElementById('prestigeBtn');
 const prestigeDesc = document.getElementById('prestigeDesc');
@@ -2588,10 +2727,65 @@ const prestigeProgressText = document.getElementById('prestigeProgressText');
 const prestigeMult = document.getElementById('prestigeMult');
 const yearBadge = document.getElementById('yearBadge');
 
-function getSemester() {
-  if (state.totalPts >= PRESTIGE_COST) return 2; // ready for summer
-  if (state.totalPts >= SEMESTER_COST) return 2;
-  return 1;
+let currentSeason = null;
+let summerAnimating = false;
+
+function getSeason() {
+  const pct = state.totalPts / PRESTIGE_COST;
+  if (pct < 0.30) return 'fall';   // 0–150K
+  if (pct < 0.60) return 'winter'; // 150K–300K
+  if (pct < 0.80) return 'spring'; // 300K–400K
+  return 'spring'; // 400K–500K: late spring, particles hint at summer
+}
+
+const seasonMeta = {
+  fall:   { emoji: '🍂', label: 'Fall' },
+  winter: { emoji: '❄️', label: 'Winter' },
+  spring: { emoji: '🌸', label: 'Spring' },
+  summer: { emoji: '☀️', label: 'Summer' },
+};
+
+function spawnBurstParticle(emoji) {
+  const p = document.createElement('div');
+  p.className = 'burst-particle';
+  p.textContent = emoji;
+  const angle = Math.random() * Math.PI * 2;
+  const dist = 60 + Math.random() * 120;
+  p.style.left = '50vw';
+  p.style.top = '45vh';
+  p.style.setProperty('--bx', Math.cos(angle) * dist + 'px');
+  p.style.setProperty('--by', Math.sin(angle) * dist + 'px');
+  p.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 2200);
+}
+
+function showSeasonBanner(season) {
+  const meta = seasonMeta[season];
+  const banner = document.createElement('div');
+  banner.className = 'season-banner';
+  banner.innerHTML = `<div class="season-banner-inner">
+    <span class="season-banner-emoji">${meta.emoji}</span>
+    <span class="season-banner-text">${meta.label}</span>
+  </div>`;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 2600);
+  // Burst of visible particles from center
+  const emojis = seasonEmojis[season];
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => spawnBurstParticle(emojis[Math.floor(Math.random() * emojis.length)]), i * 50);
+  }
+}
+
+function applySeason(season) {
+  if (summerAnimating) return; // don't override during prestige animation
+  const isFirstLoad = currentSeason === null;
+  if (season === currentSeason) return;
+  currentSeason = season;
+  document.body.classList.remove('season-fall', 'season-winter', 'season-spring', 'season-summer');
+  document.body.classList.add('season-' + season);
+  startAmbient(season);
+  if (!isFirstLoad) showSeasonBanner(season);
 }
 
 function getYear() {
@@ -2602,16 +2796,18 @@ function updatePrestige() {
   const pct = Math.min(100, (state.totalPts / PRESTIGE_COST) * 100);
   prestigeFill.style.width = pct + '%';
 
-  const semester = getSemester();
-  const year = getYear();
-  yearBadge.textContent = `Year ${year} — Semester ${semester}`;
+  applySeason(getSeason());
 
-  if (semester === 1) {
-    prestigeProgressText.textContent = fmt(state.totalPts) + ' / 250K → Semester 2';
-  } else if (state.totalPts < PRESTIGE_COST) {
-    prestigeProgressText.textContent = fmt(state.totalPts) + ' / 500K → Summer';
-  } else {
+  const year = getYear();
+  const seasonLabels = { fall: '🍂 Fall', winter: '❄️ Winter', spring: '🌸 Spring', summer: '☀️ Summer' };
+  const season = currentSeason || 'fall';
+  yearBadge.textContent = `Year ${year} — ${seasonLabels[season]}`;
+
+  const nextSeasonNames = { fall: '150K → Winter ❄️', winter: '300K → Spring 🌸', spring: '500K → Summer ☀️' };
+  if (state.totalPts >= PRESTIGE_COST) {
     prestigeProgressText.textContent = fmt(state.totalPts) + ' / 500K ☀️';
+  } else {
+    prestigeProgressText.textContent = fmt(state.totalPts) + ' / ' + (nextSeasonNames[season] || '500K → Summer ☀️');
   }
 
   prestigeBtn.disabled = state.totalPts < PRESTIGE_COST;
@@ -2619,10 +2815,13 @@ function updatePrestige() {
   if (state.totalPts >= PRESTIGE_COST) {
     const nextMult = ((state.prestigeLevel + 1) * 0.5 + 1).toFixed(1);
     prestigeDesc.textContent = `Start Year ${year + 1} with a ${nextMult}x multiplier!`;
-  } else if (semester === 2) {
-    prestigeDesc.textContent = 'Semester 2 — keep going to reach Summer Vacation!';
   } else {
-    prestigeDesc.textContent = 'Reach 250K to finish Semester 1';
+    const seasonDescs = {
+      fall: 'Fall — earn your way through to Winter!',
+      winter: 'Winter — keep pushing toward Spring!',
+      spring: 'Spring — Summer Vacation is in sight!',
+    };
+    prestigeDesc.textContent = seasonDescs[season] || 'Keep going to reach Summer Vacation!';
   }
 
   if (state.prestigeLevel > 0) {
@@ -2632,33 +2831,60 @@ function updatePrestige() {
   }
 }
 
+function summerBurst() {
+  const emojis = seasonEmojis.summer;
+  for (let i = 0; i < 16; i++) {
+    setTimeout(() => spawnBurstParticle(emojis[Math.floor(Math.random() * emojis.length)]), i * 60);
+  }
+}
+
 prestigeBtn.addEventListener('click', () => {
   if (state.totalPts < PRESTIGE_COST) return;
   if (!confirm('Go on Summer Vacation? You will reset PEL bux, upgrades, and achievements — but keep your study progress and come back with a stronger multiplier!')) return;
 
-  state.prestigeLevel++;
-  state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
+  // Flash summer theme + burst particles
+  summerAnimating = true;
+  currentSeason = 'summer';
+  document.body.classList.remove('season-fall', 'season-winter', 'season-spring');
+  document.body.classList.add('season-summer');
+  startAmbient('summer'); // clears ambient effects
+  showSeasonBanner('summer');
+  summerBurst();
+  prestigeBtn.disabled = true;
 
-  // Reset game progress
-  state.pts = 0;
-  state.totalPts = 0;
-  state.clickPower = 1;
-  state.perSecond = 0;
-  state.upgrades = {};
-  state.achievements = {};
-  state.totalBuys = 0;
-  state.streak = 0;
-  state.bestStreak = 0;
-  state.tugStreak = 0;
-  // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
+  setTimeout(() => {
+    summerAnimating = false;
+    state.prestigeLevel++;
+    state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
 
-  shopBuilt = false;
-  hitSemester2 = false;
-  renderAchievements();
-  updateTugBar();
-  updateUI();
-  showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
-  trySave();
+    // Reset game progress
+    state.pts = 0;
+    state.totalPts = 0;
+    state.clickPower = 1;
+    state.perSecond = 0;
+    state.upgrades = {};
+    state.achievements = {};
+    state.totalBuys = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.tugStreak = 0;
+    // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
+
+    shopBuilt = false;
+
+    // Transition back to fall
+    currentSeason = 'fall';
+    document.body.classList.remove('season-summer');
+    document.body.classList.add('season-fall');
+    startAmbient('fall');
+    showSeasonBanner('fall');
+
+    renderAchievements();
+    updateTugBar();
+    updateUI();
+    showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
+    trySave();
+  }, 2000);
 });
 
 // ========================================================
@@ -2769,7 +2995,6 @@ function updateUI() {
   updatePrestige();
 }
 
-let hitSemester2 = false;
 
 function gameTick() {
   if (state.perSecond > 0) {
@@ -2778,10 +3003,6 @@ function gameTick() {
     state.totalPts += gain;
   }
 
-  if (!hitSemester2 && state.totalPts >= SEMESTER_COST) {
-    hitSemester2 = true;
-    showToast('📅', 'Semester 2!', 'Halfway to Summer Vacation!');
-  }
 
   updateUI();
   checkAchievements();
@@ -2889,8 +3110,19 @@ function renderReview() {
 // ========================================================
 // PARTICLES
 // ========================================================
-function spawnParticle() {
-  const emojis = ['📋','🏫','📝','🧠','❤️','📚','🪑','☕','🎓','🌀','📖','🧘'];
+const seasonEmojis = {
+  fall:   ['🍂','🍁','🎃','🏈','📓','✏️','📋','🏫','📝','🧠'],
+  winter: ['❄️','⛄','🧣','🎄','☕','📚','📖','🧠','🧘','🪑'],
+  spring: ['🌸','🌷','🌱','🐝','🌈','☀️','📋','📝','🧠','📚'],
+  summer: ['🏖️','🌊','😎','🍦','☀️','🌴','🎉','🏄','🐚','🌺'],
+};
+
+function spawnParticle(forceEmojis) {
+  let emojis = forceEmojis || seasonEmojis[currentSeason] || seasonEmojis.fall;
+  // Late spring (80%+): mix in some summer emojis as a hint
+  if (!forceEmojis && currentSeason === 'spring' && state.totalPts / PRESTIGE_COST >= 0.80) {
+    emojis = [...seasonEmojis.spring, ...seasonEmojis.summer.slice(0, 4)];
+  }
   const p = document.createElement('div');
   p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
   p.style.cssText = `
@@ -2908,10 +3140,77 @@ function spawnParticle() {
 }
 
 // ========================================================
+// AMBIENT SEASON EFFECTS
+// ========================================================
+let ambientInterval = null;
+
+function spawnSnowflake() {
+  const flakes = ['❄','❅','❆','•','∗'];
+  const p = document.createElement('div');
+  p.className = 'ambient ambient-snow';
+  p.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+  const drift = (Math.random() - 0.5) * 120;
+  const dur = 6 + Math.random() * 8;
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.setProperty('--drift', drift + 'px');
+  p.style.fontSize = (10 + Math.random() * 10) + 'px';
+  p.style.animationDuration = dur + 's';
+  document.getElementById('particles').appendChild(p);
+  setTimeout(() => p.remove(), dur * 1000 + 100);
+}
+
+function spawnLeaf() {
+  const leaves = ['🍂','🍁','🍃'];
+  const p = document.createElement('div');
+  p.className = 'ambient ambient-leaf';
+  p.textContent = leaves[Math.floor(Math.random() * leaves.length)];
+  const drift = (Math.random() - 0.5) * 200;
+  const dur = 7 + Math.random() * 8;
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.setProperty('--drift', drift + 'px');
+  p.style.fontSize = (14 + Math.random() * 10) + 'px';
+  p.style.animationDuration = dur + 's';
+  document.getElementById('particles').appendChild(p);
+  setTimeout(() => p.remove(), dur * 1000 + 100);
+}
+
+function spawnBird() {
+  const birds = ['🐦','🐦‍⬛','🕊️'];
+  const p = document.createElement('div');
+  p.className = 'ambient ambient-bird';
+  p.textContent = birds[Math.floor(Math.random() * birds.length)];
+  const fromLeft = Math.random() > 0.5;
+  const dur = 8 + Math.random() * 6;
+  const flyX = (40 + Math.random() * 60) * (fromLeft ? 1 : -1);
+  const dip = (Math.random() - 0.5) * 80;
+  const endY = (Math.random() - 0.5) * 40;
+  p.style.left = fromLeft ? '-5vw' : '105vw';
+  p.style.top = (5 + Math.random() * 40) + 'vh';
+  p.style.setProperty('--fly-x', flyX + 'vw');
+  p.style.setProperty('--fly-dip', dip + 'px');
+  p.style.setProperty('--fly-end', endY + 'px');
+  p.style.animationDuration = dur + 's';
+  if (!fromLeft) p.style.transform = 'scaleX(-1)';
+  document.getElementById('particles').appendChild(p);
+  setTimeout(() => p.remove(), dur * 1000 + 100);
+}
+
+function startAmbient(season) {
+  if (ambientInterval) clearInterval(ambientInterval);
+  ambientInterval = null;
+  if (season === 'winter') {
+    ambientInterval = setInterval(spawnSnowflake, 400);
+  } else if (season === 'fall') {
+    ambientInterval = setInterval(spawnLeaf, 900);
+  } else if (season === 'spring') {
+    ambientInterval = setInterval(spawnBird, 3000);
+  }
+}
+
+// ========================================================
 // INIT
 // ========================================================
 tryLoad();
-hitSemester2 = state.totalPts >= SEMESTER_COST;
 renderAchievements();
 updateStudyStats();
 updateTugBar();
