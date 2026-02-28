@@ -1,6 +1,6 @@
 <!-- TODO: 1. ✅ DONE — seasonal colors change gradually as you get about 15% away from the next season
  2. ✅ DONE — hot streak bonus (hotStreakMult/coldDebuff) now properly resets on prestige
-4.  add numbered keyboard for answering questions in quiz mode
+4.  ✅ DONE — added numbered keyboard shortcuts (1-4 to answer, Enter to close) in quiz mode
  3. ✅ DONE — changed summer popup to styled in-game modal
  5. figure out end game condition and add some kind of "you win" celebration
   -->
@@ -2978,10 +2978,10 @@
         [indices[i], indices[j]] = [indices[j], indices[i]];
       }
 
-      indices.forEach(origIdx => {
+      indices.forEach((origIdx, displayIdx) => {
         const btn = document.createElement('div');
         btn.className = 'quiz-option';
-        btn.textContent = fc.options[origIdx];
+        btn.textContent = `${displayIdx + 1}. ${fc.options[origIdx]}`;
         btn.addEventListener('click', () => handleAnswer(qIndex, origIdx, btn));
         quizOptions.appendChild(btn);
       });
@@ -3041,7 +3041,7 @@
       const allOpts = quizOptions.querySelectorAll('.quiz-option');
       allOpts.forEach(opt => {
         opt.classList.add('disabled');
-        if (opt.textContent === fc.options[fc.answer]) {
+        if (opt.textContent.includes(fc.options[fc.answer])) {
           opt.classList.add('correct');
         }
       });
@@ -3137,6 +3137,28 @@
       checkAchievements();
       trySave();
     }
+
+    // Keyboard shortcuts for quiz: 1-4 to pick answer, Enter to close
+    document.addEventListener('keydown', (e) => {
+      // Quiz modal active?
+      if (quizOverlay.classList.contains('active')) {
+        const key = e.key;
+        // Number keys 1-4 select an answer
+        if (['1', '2', '3', '4'].includes(key) && !quizAnswered) {
+          const opts = quizOptions.querySelectorAll('.quiz-option');
+          const idx = parseInt(key) - 1;
+          if (opts[idx]) {
+            opts[idx].click();
+            e.preventDefault();
+          }
+        }
+        // Enter to close after answering
+        if (key === 'Enter' && quizClose.classList.contains('show')) {
+          quizClose.click();
+          e.preventDefault();
+        }
+      }
+    });
 
     quizClose.addEventListener('click', () => {
       quizOverlay.classList.remove('active');
