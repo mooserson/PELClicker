@@ -1,7 +1,7 @@
 <!-- TODO: 1. ✅ DONE — seasonal colors change gradually as you get about 15% away from the next season
  2. ✅ DONE — hot streak bonus (hotStreakMult/coldDebuff) now properly resets on prestige
 4.  add numbered keyboard for answering questions in quiz mode
- 3. change summer poopup to modal rather than browser alert
+ 3. ✅ DONE — changed summer popup to styled in-game modal
  5. figure out end game condition and add some kind of "you win" celebration
   -->
 
@@ -711,6 +711,82 @@
 
     .modal-overlay.active {
       display: flex;
+    }
+
+    /* === PRESTIGE CONFIRM MODAL === */
+    .prestige-confirm-modal {
+      text-align: center;
+      max-width: 440px;
+    }
+
+    .prestige-confirm-icon {
+      font-size: 3em;
+      margin-bottom: 8px;
+    }
+
+    .prestige-confirm-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5em;
+      color: #f6d365;
+      margin-bottom: 12px;
+    }
+
+    .prestige-confirm-body {
+      font-size: 0.95em;
+      line-height: 1.5;
+      color: #c8d6e5;
+      margin-bottom: 10px;
+    }
+
+    .prestige-confirm-body strong {
+      color: #4ecdc4;
+    }
+
+    .prestige-confirm-next {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95em;
+      color: #f6d365;
+      margin-bottom: 18px;
+    }
+
+    .prestige-confirm-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .prestige-confirm-btn {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1em;
+      padding: 12px 28px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .prestige-confirm-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .prestige-confirm-btn.cancel {
+      background: rgba(255, 255, 255, 0.1);
+      color: #8da9c4;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .prestige-confirm-btn.cancel:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .prestige-confirm-btn.confirm {
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      color: #1a202c;
+      box-shadow: 0 4px 15px rgba(246, 211, 101, 0.3);
+    }
+
+    .prestige-confirm-btn.confirm:hover {
+      box-shadow: 0 6px 25px rgba(246, 211, 101, 0.5);
     }
 
     .quiz-modal {
@@ -1711,6 +1787,24 @@
       <div class="quiz-options" id="quizOptions"></div>
       <div class="quiz-result" id="quizResult"></div>
       <button class="quiz-close" id="quizClose">Continue</button>
+    </div>
+  </div>
+
+  <!-- PRESTIGE CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="prestigeOverlay">
+    <div class="quiz-modal prestige-confirm-modal">
+      <div class="prestige-confirm-icon">☀️</div>
+      <div class="prestige-confirm-title">Summer Vacation?</div>
+      <div class="prestige-confirm-body">
+        Go on Summer Vacation? You will reset <strong>PEL bux</strong>, <strong>upgrades</strong>, and
+        <strong>achievements</strong> — but keep your <strong>study progress</strong> and come back with a stronger
+        multiplier!
+      </div>
+      <div class="prestige-confirm-next" id="prestigeConfirmNext"></div>
+      <div class="prestige-confirm-buttons">
+        <button class="prestige-confirm-btn cancel" id="prestigeCancel">Not Yet</button>
+        <button class="prestige-confirm-btn confirm" id="prestigeConfirm">Let's Go! ☀️</button>
+      </div>
     </div>
   </div>
 
@@ -3314,7 +3408,18 @@
 
     prestigeBtn.addEventListener('click', () => {
       if (state.totalPts < PRESTIGE_COST) return;
-      if (!confirm('Go on Summer Vacation? You will reset PEL bux, upgrades, and achievements — but keep your study progress and come back with a stronger multiplier!')) return;
+      // Show prestige confirmation modal
+      const nextMult = ((state.prestigeLevel + 1) * 0.5 + 1).toFixed(1);
+      document.getElementById('prestigeConfirmNext').textContent = `Year ${getYear() + 1} multiplier: ${nextMult}x`;
+      document.getElementById('prestigeOverlay').classList.add('active');
+    });
+
+    document.getElementById('prestigeCancel').addEventListener('click', () => {
+      document.getElementById('prestigeOverlay').classList.remove('active');
+    });
+
+    document.getElementById('prestigeConfirm').addEventListener('click', () => {
+      document.getElementById('prestigeOverlay').classList.remove('active');
 
       // Flash summer theme + burst particles
       summerAnimating = true;
