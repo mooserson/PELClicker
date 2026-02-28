@@ -1,5 +1,5 @@
 <!-- TODO: 1. ✅ DONE — seasonal colors change gradually as you get about 15% away from the next season
- 2. figure out if hot streak bonus carries over?
+ 2. ✅ DONE — hot streak bonus (hotStreakMult/coldDebuff) now properly resets on prestige
 4.  add numbered keyboard for answering questions in quiz mode
  3. change summer poopup to modal rather than browser alert
  5. figure out end game condition and add some kind of "you win" celebration
@@ -3342,6 +3342,8 @@
         state.streak = 0;
         state.bestStreak = 0;
         state.tugStreak = 0;
+        state.hotStreakMult = 2;   // reset to base (upgrades are wiped)
+        state.coldDebuff = 0.5;   // reset to base
         // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
 
         shopBuilt = false;
