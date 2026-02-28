@@ -2838,7 +2838,7 @@
     // CLICK
     // ========================================================
     clickBtn.addEventListener('click', (e) => {
-      const clickGain = Math.max(1, Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier()));
+      const clickGain = Math.max(1, Math.floor(state.clickPower * getCombinedMultiplier()));
       state.pts += clickGain;
       state.totalPts += clickGain;
 
@@ -3058,6 +3058,7 @@
         state.correct++;
         state.streak++;
         if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+        // Negative bias: if negative, only inch back by 1; if positive, increment normally
         state.tugStreak = Math.min(STREAK_MAX, state.tugStreak + 1);
         state.questionStats[qIndex].right++;
         state.questionStats[qIndex].consecutiveRight++;
@@ -3093,7 +3094,12 @@
       } else {
         state.wrong++;
         state.streak = 0;
-        state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
+        // Negative bias: wrong answer resets positive streak to 0, otherwise decrements by 1
+        if (state.tugStreak > 0) {
+          state.tugStreak = 0;
+        } else {
+          state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
+        }
         state.questionStats[qIndex].wrong++;
         state.questionStats[qIndex].consecutiveRight = 0;
 
@@ -3595,8 +3601,14 @@
       return 1;
     }
 
+    // Additive combined multiplier: base 1x + prestige bonus + streak bonus
+    // e.g. 1.5x prestige + 2x hot streak = 1 + 0.5 + 1 = 2.5x total
+    function getCombinedMultiplier() {
+      return (state.prestigeMultiplier - 1) + getTugMultiplier();
+    }
+
     function getEffectivePerSecond() {
-      return state.perSecond * getTugMultiplier() * state.prestigeMultiplier;
+      return state.perSecond * getCombinedMultiplier();
     }
 
     function updateUI() {
@@ -3612,7 +3624,7 @@
       else if (state.tugStreak <= -STREAK_MAX) ppsText += ' 🥶 0.5x';
       perSecEl.textContent = ppsText;
 
-      const effectiveClick = Math.max(1, Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier()));
+      const effectiveClick = Math.max(1, Math.floor(state.clickPower * getCombinedMultiplier()));
       clickPowerEl.textContent = '+' + fmt(effectiveClick) + ' per click';
       renderShop();
       updateTugBar();
