@@ -43,6 +43,14 @@
     margin-top: 2px;
   }
 
+  .year-badge {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.05em;
+    color: #f6d365;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
   .stats-bar {
     display: flex;
     justify-content: center;
@@ -98,6 +106,26 @@
     font-size: 0.9em;
     color: #8da9c4;
     margin-bottom: 14px;
+    padding: 3px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
+    transition: background 0.4s, color 0.4s;
+  }
+
+  .per-second.hot-pps {
+    background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0077ff, #8800ff, #ff0000);
+    background-size: 400% 400%;
+    animation: rainbowShift 2s linear infinite;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .per-second.cold-pps {
+    background: linear-gradient(90deg, #1a0000, #4a0000, #2a0000, #0a0000);
+    background-size: 300% 300%;
+    animation: coldShift 3s ease-in-out infinite;
+    color: #fc8181;
+    font-weight: 700;
   }
 
   .click-btn {
@@ -169,6 +197,23 @@
     background: rgba(255,255,255,0.06);
     padding: 4px 14px;
     border-radius: 14px;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  .click-power-display.hot-cpd {
+    background: linear-gradient(90deg, #ff0000, #ff7700, #ffff00, #00ff00, #0077ff, #8800ff, #ff0000);
+    background-size: 400% 400%;
+    animation: rainbowShift 2s linear infinite;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .click-power-display.cold-cpd {
+    background: linear-gradient(90deg, #1a0000, #4a0000, #2a0000, #0a0000);
+    background-size: 300% 300%;
+    animation: coldShift 3s ease-in-out infinite;
+    color: #fc8181;
+    font-weight: 700;
   }
 
   .click-text {
@@ -1008,7 +1053,7 @@
 
 <header>
   <h1>PEL Clicker</h1>
-  <p class="subtitle">Click to earn Support Points. Answer PEL questions to level up!</p>
+  <div class="year-badge" id="yearBadge">Year 1 — Semester 1</div>
   <div class="stats-bar">
     <span>Questions Correct: <span class="stat-val" id="statCorrect">0</span></span>
     <span>Accuracy: <span class="stat-val" id="statAccuracy">--%</span></span>
@@ -1030,7 +1075,10 @@
   <div class="review-panel">
     <div class="review-header">
       <h2>Study Review</h2>
-      <button class="review-close-btn" id="reviewCloseBtn">&times;</button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <a href="PEL offical Flashcard.pdf" target="_blank" style="color:#4ecdc4;font-size:0.8em;font-weight:700;text-decoration:none;">📄 Full PDF</a>
+        <button class="review-close-btn" id="reviewCloseBtn">&times;</button>
+      </div>
     </div>
     <div class="review-filters" id="reviewFilters">
       <button class="filter-btn active" data-filter="all">All</button>
@@ -2140,7 +2188,7 @@ function fmt(n) {
 // CLICK
 // ========================================================
 clickBtn.addEventListener('click', (e) => {
-  const clickGain = Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier());
+  const clickGain = Math.max(1, Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier()));
   state.pts += clickGain;
   state.totalPts += clickGain;
 
@@ -2403,7 +2451,7 @@ function handleAnswer(qIndex, chosenIdx, btnEl) {
 
     let coldMsg = '';
     if (state.tugStreak <= -STREAK_MAX) {
-      coldMsg = `<br>🥶 COLD STREAK! Generation halved!<br><a href="https://quizlet.com/search?query=school+social+work+PEL&type=sets" target="_blank" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
+      coldMsg = `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
     } else if (state.tugStreak < 0) {
       coldMsg = `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
     }
@@ -2420,6 +2468,18 @@ function handleAnswer(qIndex, chosenIdx, btnEl) {
   updateTugBar();
 
   quizClose.classList.add('show');
+
+  // Wire up study link in quiz result if present
+  setTimeout(() => {
+    const studyLink = quizResult.querySelector('.quiz-study-link');
+    if (studyLink) studyLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      quizOverlay.classList.remove('active');
+      renderReview();
+      reviewOverlay.classList.add('active');
+    });
+  }, 0);
+
   updateStudyStats();
   checkAchievements();
   trySave();
@@ -2510,28 +2570,54 @@ function showToast(icon, title, desc) {
 // ========================================================
 // PRESTIGE
 // ========================================================
+const SEMESTER_COST = 250000;
 const PRESTIGE_COST = 500000;
 const prestigeBtn = document.getElementById('prestigeBtn');
 const prestigeDesc = document.getElementById('prestigeDesc');
 const prestigeFill = document.getElementById('prestigeFill');
 const prestigeProgressText = document.getElementById('prestigeProgressText');
 const prestigeMult = document.getElementById('prestigeMult');
+const yearBadge = document.getElementById('yearBadge');
+
+function getSemester() {
+  if (state.totalPts >= PRESTIGE_COST) return 2; // ready for summer
+  if (state.totalPts >= SEMESTER_COST) return 2;
+  return 1;
+}
+
+function getYear() {
+  return state.prestigeLevel + 1;
+}
 
 function updatePrestige() {
   const pct = Math.min(100, (state.totalPts / PRESTIGE_COST) * 100);
   prestigeFill.style.width = pct + '%';
-  prestigeProgressText.textContent = fmt(state.totalPts) + ' / 500K';
+
+  const semester = getSemester();
+  const year = getYear();
+  yearBadge.textContent = `Year ${year} — Semester ${semester}`;
+
+  if (semester === 1) {
+    prestigeProgressText.textContent = fmt(state.totalPts) + ' / 250K → Semester 2';
+  } else if (state.totalPts < PRESTIGE_COST) {
+    prestigeProgressText.textContent = fmt(state.totalPts) + ' / 500K → Summer';
+  } else {
+    prestigeProgressText.textContent = fmt(state.totalPts) + ' / 500K ☀️';
+  }
+
   prestigeBtn.disabled = state.totalPts < PRESTIGE_COST;
 
   if (state.totalPts >= PRESTIGE_COST) {
     const nextMult = ((state.prestigeLevel + 1) * 0.5 + 1).toFixed(1);
-    prestigeDesc.textContent = `Reset upgrades & achievements. Come back with ${nextMult}x multiplier!`;
+    prestigeDesc.textContent = `Start Year ${year + 1} with a ${nextMult}x multiplier!`;
+  } else if (semester === 2) {
+    prestigeDesc.textContent = 'Semester 2 — keep going to reach Summer Vacation!';
   } else {
-    prestigeDesc.textContent = 'Reach 500K total PEL bux to go on Summer Vacation';
+    prestigeDesc.textContent = 'Reach 250K to finish Semester 1';
   }
 
   if (state.prestigeLevel > 0) {
-    prestigeMult.textContent = `☀️ ${state.prestigeMultiplier}x Summer Bonus`;
+    prestigeMult.textContent = `📈 ${state.prestigeMultiplier}x Experience Bonus`;
   } else {
     prestigeMult.textContent = '';
   }
@@ -2558,6 +2644,7 @@ prestigeBtn.addEventListener('click', () => {
   // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
 
   shopBuilt = false;
+  hitSemester2 = false;
   renderAchievements();
   updateTugBar();
   updateUI();
@@ -2601,12 +2688,16 @@ function updateTugBar() {
   tugColdEnd.classList.remove('active');
   tugHotEnd.classList.remove('active');
   clickBtn.classList.remove('hot-streak', 'cold-streak');
+  perSecEl.classList.remove('hot-pps', 'cold-pps');
+  clickPowerEl.classList.remove('hot-cpd', 'cold-cpd');
 
   if (state.tugStreak >= STREAK_MAX) {
     tugPuck.classList.add('hidden');
     tugFillHot.classList.add('maxed');
     tugHotEnd.classList.add('active');
     clickBtn.classList.add('hot-streak');
+    perSecEl.classList.add('hot-pps');
+    clickPowerEl.classList.add('hot-cpd');
     tugStatus.className = 'tug-status-bar hot';
     tugStatus.innerHTML = `🔥 HOT STREAK — ${state.hotStreakMult}x Generation!`;
   } else if (state.tugStreak <= -STREAK_MAX) {
@@ -2614,6 +2705,8 @@ function updateTugBar() {
     tugFillCold.classList.add('maxed');
     tugColdEnd.classList.add('active');
     clickBtn.classList.add('cold-streak');
+    perSecEl.classList.add('cold-pps');
+    clickPowerEl.classList.add('cold-cpd');
     tugStatus.className = 'tug-status-bar cold';
     tugStatus.innerHTML = `🥶 COLD STREAK — 0.5x Generation! <a class="tug-study-link" href="#" id="tugStudyLink">Study PEL Flashcards →</a>`;
     setTimeout(() => {
@@ -2652,17 +2745,22 @@ function updateUI() {
   const effectivePPS = getEffectivePerSecond();
   scoreEl.textContent = fmt(state.pts);
 
-  let ppsText = fmt(effectivePPS) + ' pts/sec';
+  const ppsDisplay = effectivePPS > 0 && effectivePPS < 1
+    ? effectivePPS.toFixed(1)
+    : fmt(effectivePPS);
+  let ppsText = ppsDisplay + ' pts/sec';
   if (state.tugStreak >= STREAK_MAX) ppsText += ' 🔥' + state.hotStreakMult + 'x';
   else if (state.tugStreak <= -STREAK_MAX) ppsText += ' 🥶 0.5x';
   perSecEl.textContent = ppsText;
 
-  const effectiveClick = Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier());
+  const effectiveClick = Math.max(1, Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier()));
   clickPowerEl.textContent = '+' + fmt(effectiveClick) + ' per click';
   renderShop();
   updateTugBar();
   updatePrestige();
 }
+
+let hitSemester2 = false;
 
 function gameTick() {
   if (state.perSecond > 0) {
@@ -2670,6 +2768,12 @@ function gameTick() {
     state.pts += gain;
     state.totalPts += gain;
   }
+
+  if (!hitSemester2 && state.totalPts >= SEMESTER_COST) {
+    hitSemester2 = true;
+    showToast('📅', 'Semester 2!', 'Halfway to Summer Vacation!');
+  }
+
   updateUI();
   checkAchievements();
 }
@@ -2798,6 +2902,7 @@ function spawnParticle() {
 // INIT
 // ========================================================
 tryLoad();
+hitSemester2 = state.totalPts >= SEMESTER_COST;
 renderAchievements();
 updateStudyStats();
 updateTugBar();
