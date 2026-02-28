@@ -2082,19 +2082,25 @@ const flashcards = [
 // UPGRADES
 // ========================================================
 const upgrades = [
-  { id: 'coffee',       name: 'Teacher Lounge Coffee', icon: '☕', desc: '+1 pts/sec',       baseCost: 15,    cps: 1 },
-  { id: 'clipboard',    name: 'Extra Clipboard',       icon: '📋', desc: '+1 click power',   baseCost: 25,    clickBonus: 1 },
-  { id: 'crayons',      name: 'Art Supplies',          icon: '🖍️', desc: '+3 pts/sec',       baseCost: 100,   cps: 3 },
-  { id: 'lunchgroup',   name: 'Lunch Group',           icon: '🪑', desc: '+8 pts/sec',       baseCost: 400,   cps: 8 },
-  { id: 'fidget',       name: 'Fidget Tools',          icon: '🌀', desc: '+3 click power',   baseCost: 600,   clickBonus: 3 },
-  { id: 'calming',      name: 'Calming Corner',        icon: '🧘', desc: '+20 pts/sec',      baseCost: 1500,  cps: 20 },
-  { id: 'iep_binder',   name: 'IEP Binder Stack',      icon: '📚', desc: '+50 pts/sec',      baseCost: 4000,  cps: 50 },
-  { id: 'restorative',  name: 'Restorative Circle',    icon: '🔄', desc: '+10 click power',  baseCost: 6000,  clickBonus: 10 },
-  { id: 'resource_room',name: 'Resource Room',         icon: '🏠', desc: '+120 pts/sec',     baseCost: 15000, cps: 120 },
-  { id: 'crisis_kit',   name: 'Crisis Response Kit',   icon: '🚨', desc: '+300 pts/sec',     baseCost: 40000, cps: 300 },
-  { id: 'sel_curriculum',name: 'SEL Curriculum',       icon: '❤️', desc: '+30 click power',  baseCost: 60000, clickBonus: 30 },
-  { id: 'whole_school', name: 'Whole School MTSS',     icon: '🏫', desc: '+800 pts/sec',     baseCost: 150000,cps: 800 },
-  { id: 'streak_boost', name: 'Hot Streak Boost',     icon: '🔥', desc: 'Hot streak multiplier +0.5x', baseCost: 5000, streakBoost: 0.5 },
+  // Tier 1 — Early game
+  { id: 'coffee',       name: 'Teacher Lounge Coffee', icon: '☕', desc: '+1 pts/sec',       baseCost: 15,     cps: 1 },
+  { id: 'clipboard',    name: 'Extra Clipboard',       icon: '📋', desc: '+2 click power',   baseCost: 30,     clickBonus: 2 },
+  // Tier 2 — Getting going
+  { id: 'crayons',      name: 'Art Supplies',          icon: '🖍️', desc: '+4 pts/sec',       baseCost: 150,    cps: 4 },
+  { id: 'fidget',       name: 'Fidget Tools',          icon: '🌀', desc: '+5 click power',   baseCost: 300,    clickBonus: 5 },
+  // Tier 3 — Mid game
+  { id: 'lunchgroup',   name: 'Lunch Group',           icon: '🪑', desc: '+12 pts/sec',      baseCost: 800,    cps: 12 },
+  { id: 'calming',      name: 'Calming Corner',        icon: '🧘', desc: '+30 pts/sec',      baseCost: 2500,   cps: 30 },
+  { id: 'restorative',  name: 'Restorative Circle',    icon: '🔄', desc: '+15 click power',  baseCost: 3500,   clickBonus: 15 },
+  // Tier 4 — Late-mid
+  { id: 'iep_binder',   name: 'Paperwork Speedrun',     icon: '📚', desc: '+75 pts/sec',      baseCost: 8000,   cps: 75 },
+  { id: 'sel_curriculum',name: 'SEL Curriculum',       icon: '❤️', desc: '+40 click power',  baseCost: 12000,  clickBonus: 40 },
+  // Tier 5 — Late game
+  { id: 'resource_room',name: 'Resource Room',         icon: '🏠', desc: '+200 pts/sec',     baseCost: 30000,  cps: 200 },
+  { id: 'crisis_kit',   name: 'Contract Negotiation Win', icon: '🤝', desc: '+500 pts/sec',   baseCost: 80000,  cps: 500 },
+  { id: 'whole_school', name: 'Whole School MTSS',     icon: '🏫', desc: '+1200 pts/sec',    baseCost: 200000, cps: 1200 },
+  // Special
+  { id: 'streak_boost', name: 'Hot Streak Boost',     icon: '🔥', desc: 'Hot streak multiplier +0.25x', baseCost: 25000, streakBoost: 0.25 },
 ];
 
 // ========================================================
