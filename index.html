@@ -832,6 +832,14 @@
       color: #f6d365;
     }
 
+    .quiz-source {
+      font-size: 0.72em;
+      color: #6b7a8d;
+    }
+    .quiz-source .src-ai {
+      color: #9f7aea;
+    }
+
     .quiz-question {
       font-size: 1.05em;
       line-height: 1.5;
@@ -1859,7 +1867,10 @@
     <div class="quiz-modal">
       <div class="quiz-header">
         <span class="quiz-label" id="quizLabel">PEL Question</span>
-        <span class="quiz-cost" id="quizCost"></span>
+        <span style="display:flex;align-items:center;gap:10px;">
+          <span class="quiz-source" id="quizSource"></span>
+          <span class="quiz-cost" id="quizCost"></span>
+        </span>
       </div>
       <div class="quiz-question" id="quizQuestion"></div>
       <div class="quiz-options" id="quizOptions"></div>
@@ -3006,6 +3017,7 @@
     const quizOverlay = document.getElementById('quizOverlay');
     const quizLabel = document.getElementById('quizLabel');
     const quizCost = document.getElementById('quizCost');
+    const quizSource = document.getElementById('quizSource');
     const quizQuestion = document.getElementById('quizQuestion');
     const quizOptions = document.getElementById('quizOptions');
     const quizResult = document.getElementById('quizResult');
@@ -3158,6 +3170,13 @@
     function showQuiz(upgradeName, cost) {
       const qIndex = pickQuestion();
       const fc = getActiveFlashcards()[qIndex];
+
+      const isGemini = qIndex >= flashcards.length;
+      const setNum = isGemini ? qIndex - flashcards.length + 1 : qIndex + 1;
+      const setTotal = isGemini ? geminiFlashcards.length : flashcards.length;
+      quizSource.innerHTML = isGemini
+        ? `<span class="src-ai">Generated ISBE Flashcard</span> ${setNum}/${setTotal}`
+        : `PEL Official Flashcard ${setNum}/${setTotal}`;
 
       quizLabel.textContent = `Answer to unlock: ${upgradeName}`;
       quizCost.textContent = fmt(cost) + ' pts';
