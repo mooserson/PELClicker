@@ -1527,6 +1527,66 @@
       background: rgba(255, 255, 255, 0.2);
     }
 
+    .gemini-toggle-row {
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .gemini-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #c5d5e4;
+      cursor: pointer;
+    }
+    .gemini-toggle-note {
+      font-size: 0.72em;
+      color: #6b7a8d;
+      margin-top: 4px;
+      padding-left: 44px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.12);
+      border-radius: 20px;
+      transition: background 0.25s;
+      cursor: pointer;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      bottom: 3px;
+      background: #8da9c4;
+      border-radius: 50%;
+      transition: transform 0.25s, background 0.25s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+      background: rgba(78,205,196,0.25);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(16px);
+      background: #4ecdc4;
+    }
+
     .review-filters {
       display: flex;
       gap: 8px;
@@ -1599,6 +1659,15 @@
       margin-top: 6px;
       font-size: 0.78em;
       color: #8da9c4;
+    }
+
+    .review-card .rc-source {
+      font-size: 0.72em;
+      color: #6b7a8d;
+      margin-bottom: 6px;
+    }
+    .review-card .rc-source .src-ai {
+      color: #9f7aea;
     }
 
     .review-card .rc-stats .rc-right {
@@ -1702,9 +1771,18 @@
         <h2>Study Review</h2>
         <div style="display:flex;align-items:center;gap:10px;">
           <a href="PEL offical Flashcard.pdf" target="_blank"
-            style="color:#4ecdc4;font-size:0.8em;font-weight:700;text-decoration:none;">📄 Full PDF</a>
+            style="color:#4ecdc4;font-size:0.75em;font-weight:700;text-decoration:none;">📄 Official Cards (PDF)</a>
+          <a href="gemini-flashcards-2.0.csv" target="_blank"
+            style="color:#8da9c4;font-size:0.75em;font-weight:700;text-decoration:none;">📋 Generated Cards (CSV)</a>
           <button class="review-close-btn" id="reviewCloseBtn">&times;</button>
         </div>
+      </div>
+      <div class="gemini-toggle-row">
+        <label class="gemini-toggle-label">
+          <span class="toggle-switch"><input type="checkbox" id="geminiToggle"><span class="toggle-slider"></span></span>
+          Include 82 AI Cards <span style="color:#8da9c4;font-size:0.78em;">(ISBE Study Guide & Practice Tests)</span>
+        </label>
+        <div class="gemini-toggle-note">AI-generated from ISBE sources. Adds some similar, but not redundant, items.</div>
       </div>
       <div class="review-filters" id="reviewFilters">
         <button class="filter-btn active" data-filter="all">All</button>
@@ -2722,29 +2800,113 @@
       },
     ];
 
+    // 82 AI-generated flashcards from ISBE Study Guide & Practice Tests
+    const geminiFlashcards = [
+      { q: 'According to Maslow\'s hierarchy of needs, which level represents the most basic survival needs such as food, water, and shelter?', options: ['Safety', 'Physiological', 'Social', 'Esteem'], answer: 1 },
+      { q: 'In Maslow\'s hierarchy, which level includes the need for \'predictability and structure\' to feel secure?', options: ['Physiological', 'Security/Safety', 'Social', 'Self-actualization'], answer: 1 },
+      { q: 'In Erikson\'s Stages of Development, which task is associated with the age range of 6 to 12 years?', options: ['Trust vs. Mistrust', 'Initiative vs. Guilt', 'Industry vs. Inferiority', 'Identity vs. Role Confusion'], answer: 2 },
+      { q: 'Which stage of Erikson\'s theory occurs during adolescence and involves the \'integration of previous values\' into a sense of self?', options: ['Autonomy vs. Shame', 'Industry vs. Inferiority', 'Identity vs. Role Confusion', 'Intimacy vs. Isolation'], answer: 2 },
+      { q: 'Kohlberg\'s Preconventional level of moral development is primarily characterized by which of the following?', options: ['Social order', 'Ethical principles', 'Self-interest', 'Community welfare'], answer: 2 },
+      { q: 'According to Piaget, in which stage does a child \'retain images of objects\' and develop \'primitive logic\'?', options: ['Sensorimotor', 'Preoperational', 'Concrete Operational', 'Formal Operational'], answer: 0 },
+      { q: 'Which Piagetian stage is characterized by \'egocentric\' thinking and the inability to \'realize that others have a different point of view\'?', options: ['Sensorimotor', 'Preoperational', 'Concrete Operational', 'Formal Operational'], answer: 1 },
+      { q: 'In which Piagetian stage does a child develop \'conservation\' and the ability to \'solve concrete problems\'?', options: ['Preoperational', 'Concrete Operational', 'Formal Operational'], answer: 1 },
+      { q: 'What is the primary focus of B.F. Skinner\'s Behavioral Theory?', options: ['Observational learning', 'Operant conditioning', 'Scaffolding'], answer: 1 },
+      { q: 'Bandura\'s Social Learning Theory emphasizes that learning occurs through which process?', options: ['Punishment', 'Observation and modeling', 'Genetic predisposition'], answer: 1 },
+      { q: 'Which term describes the \'steady state of cognitive processes\' and the \'balance between person and environment\' in Piaget\'s theory?', options: ['Intelligence', 'Equilibrium', 'Schemata'], answer: 1 },
+      { q: 'The ecological model is derived from which broader theory?', options: ['Social Learning Theory', 'Systems Theory', 'Behavioral Theory'], answer: 1 },
+      { q: 'Which core principle of the Strengths Perspective involves serving clients as \'directors of their own helping process\'?', options: ['Mobilization of resources', 'Collaboration', 'Honor client-set goals'], answer: 2 },
+      { q: 'Cultural _____ is a \'personal lifelong commitment to self-evaluation\' and \'examination of her/his own beliefs.\'', options: ['Competence', 'Humility', 'Responsiveness'], answer: 1 },
+      { q: 'Which Supreme Court ruling states that schools cannot use a child\'s \'immigration status to exclude them from schooling\'?', options: ['Lau v. Nichols', 'Plyler v. Doe', 'Brown v. Board of Education'], answer: 1 },
+      { q: 'The Supreme Court ruling in Lau v. Nichols (1974) centered on the rights of which student population?', options: ['Students with disabilities', 'Undocumented students', 'Non-English speaking students'], answer: 2 },
+      { q: 'In Tuckman\'s Stages of Group Development, which stage is characterized by \'conflict and competition\'?', options: ['Forming', 'Storming', 'Norming', 'Performing'], answer: 1 },
+      { q: 'Which acronym represents the core skills of Motivational Interviewing (MI)?', options: ['FBA', 'OARS', 'PBIS'], answer: 1 },
+      { q: 'In Multi-Tiered Systems of Support (MTSS), Tier 2 is described as providing which level of support?', options: ['Universal', 'Targeted', 'Intensive'], answer: 1 },
+      { q: 'What is the primary goal of Cognitive Behavior Theory (CBT)?', options: ['Exploring childhood trauma', 'Identifying irrational thoughts and beliefs', 'Achieving self-actualization'], answer: 1 },
+      { q: 'The \'Miracle Question\' is a technique used in which therapeutic approach?', options: ['Cognitive Behavior Theory', 'Solution-Focused Brief Treatment', 'Task-Centered Model'], answer: 1 },
+      { q: 'Family Systems Theory: What occurs when a \'third person is drawn into the interactions between two other people\'?', options: ['Differentiation', 'Triangulation', 'Multi-generational transmission'], answer: 1 },
+      { q: 'Schools are considered _____ settings because their primary mission is education rather than social work.', options: ['Clinical', 'Primary', 'Host'], answer: 2 },
+      { q: 'A Functional Behavior Assessment (FBA) should be treated as a _____ rather than a final conclusion.', options: ['Mandate', 'Hypothesis', 'Result'], answer: 1 },
+      { q: 'The \'ABC\' in behavioral data collection stands for Antecedent, Behavior, and _____.', options: ['Conclusion', 'Context', 'Consequence'], answer: 2 },
+      { q: 'Which document is described as the \'cornerstone of a quality education\' for a student with a disability?', options: ['504 Plan', 'IEP', 'SDS'], answer: 1 },
+      { q: 'Section 504 of the Rehabilitation Act of 1973 is a federal law that prohibits _____ against persons with disabilities.', options: ['Segregation', 'Discrimination', 'Funding'], answer: 1 },
+      { q: 'Under IDEA, the _____ requirement ensures students are educated with non-disabled peers to the maximum extent appropriate.', options: ['FAPE', 'LRE', 'Child Find'], answer: 1 },
+      { q: 'Which federal law protects the privacy of \'personally identifiable information\' in educational records?', options: ['IDEA', 'ESSA', 'FERPA'], answer: 2 },
+      { q: 'According to Illinois law, when should school personnel report to DCFS regarding suspected child abuse?', options: ['When they have proof', 'When they have reasonable suspicion', 'Only after consulting the principal'], answer: 1 },
+      { q: 'What is the legal timeline for a school district to complete an initial evaluation after a parent signs consent?', options: ['30 school days', '45 school days', '60 school days'], answer: 2 },
+      { q: 'If a parent disagrees with the school\'s evaluation results, they have the right to request a(n) _____.', options: ['Manifestation Determination', 'Independent Educational Evaluation (IEE)', 'Due process hearing'], answer: 1 },
+      { q: 'Which role involves providing \'clinical and other guidance\' to a consultee without directly serving the client?', options: ['Mentor', 'Coach', 'Consultant'], answer: 2 },
+      { q: 'Which professional development component is a \'purposeful method designed to empower individuals to learn more about themselves\'?', options: ['Consultation', 'Coaching', 'Mentoring'], answer: 1 },
+      { q: 'In research, what is confirmed when \'several independent researchers achieve similar results using the same methodology\'?', options: ['Validity', 'Reliability', 'Objectivity'], answer: 1 },
+      { q: 'What is the most effective first step in gathering medical information for an elementary student\'s assessment?', options: ['Interviewing the student', 'Examining the child in school', 'Asking parents to release medical records'], answer: 2 },
+      { q: 'Which technique is most effective for avoiding \'adversarial discussions\' with parents/guardians?', options: ['Summarizing points', 'Being open and honest', 'Expressing concerns in a non-judgmental manner'], answer: 2 },
+      { q: 'In the context of Special Education, \'FAPE\' stands for Free Appropriate _____ Education.', options: ['Private', 'Public', 'Professional'], answer: 1 },
+      { q: 'Which framework is specifically mentioned as a way to \'prevent misidentification\' of students with trauma histories?', options: ['Medical model', 'Standardized testing', 'Ecological systems approach'], answer: 2 },
+      { q: 'Providing counseling to the child of a professional colleague is an example of a _____.', options: ['Conflict of interest', 'Dual relationship', 'Mandated service'], answer: 1 },
+      { q: 'When a student discloses past abuse (2 years ago) but is \'currently safe\', what is the most legally appropriate response in IL?', options: ['Document and take no action', 'Report to DCFS', 'Encourage the student to report themselves'], answer: 1 },
+      { q: 'If a bilingual student performs poorly on a standardized measure in English, what is the most defensible conclusion?', options: ['The student has a disability', 'Results are invalid due to language dominance', 'The student needs immediate placement'], answer: 1 },
+      { q: 'In school social work, \'Person-in-Environment\' (PIE) focuses on the _____ between the client and their environment.', options: ['Conflict', 'Goodness of fit', 'Separation'], answer: 1 },
+      { q: 'What is the primary purpose of a \'Needs Assessment\' in a school setting?', options: ['Individual student diagnosis', 'Identifying gaps in services and areas of improvement', 'Administrative organizational charting'], answer: 1 },
+      { q: 'According to the Danielson Framework, which domain includes \'communicating with families\' and \'maintaining accurate records\'?', options: ['Domain 1: Planning', 'Domain 2: Environment', 'Domain 4: Professional Responsibilities'], answer: 2 },
+      { q: 'The _____ question (e.g., \'If you woke up tomorrow and a miracle had taken place...\') is a hallmark of Solution-Focused therapy.', options: ['Exception', 'Miracle', 'Scaling'], answer: 1 },
+      { q: 'In the Social Developmental Study (SDS), which component includes \'health history\' and \'milestones like age of walking\'?', options: ['Family history', 'School history', 'Developmental history'], answer: 2 },
+      { q: 'The term _____ refers to \'avoidable or remediable differences among groups of people\'.', options: ['Equality', 'Equity', 'Diversity'], answer: 1 },
+      { q: 'PBIS stands for _____ Behavioral Interventions and Supports.', options: ['Proactive', 'Positive', 'Primary'], answer: 1 },
+      { q: 'Which role is primarily responsible for interpreting the \'educational implications of the evaluation\' in an IEP meeting?', options: ['School Social Worker', 'School Psychologist', 'Administrator'], answer: 1 },
+      { q: 'When a student shows no response to Tier 2 supports for absenteeism, what is the next appropriate step?', options: ['Special education referral', 'Tier 3 individualized intervention', 'Grade retention'], answer: 1 },
+      { q: 'A Social Developmental Study (SDS) focuses on the student\'s functioning within which environment?', options: ['Home only', 'Clinical only', 'Educational environment'], answer: 2 },
+      { q: 'The \'Least Restrictive Environment\' (LRE) mandate requires that a student with an IEP be educated in _____ education settings first.', options: ['Special', 'General', 'Vocational'], answer: 1 },
+      { q: 'Which assessment evaluates \'daily living skills, and conceptual, social, and practical behavior\'?', options: ['BASC-3', 'ABAS', 'Vineland'], answer: 1 },
+      { q: 'Tuckman\'s stage where the group begins to \'work effectively toward its goals\' is called _____.', options: ['Norming', 'Performing', 'Adjourning'], answer: 1 },
+      { q: 'The school social worker\'s role as a \'mandated reporter\' applies to which of the following?', options: ['Academic failure', 'Suspected child abuse and neglect', 'Behavioral non-compliance'], answer: 1 },
+      { q: 'Cognitive Behavior Theory: \'All-or-nothing\' thinking and \'jumping to conclusions\' are examples of cognitive _____.', options: ['Deficits', 'Distortions', 'Capacities'], answer: 1 },
+      { q: 'Which intervention strategy is \'site-specific\' and assesses the \'intact, undisturbed, natural organism-environment system\'?', options: ['Systems Theory', 'Ecological Theory', 'Behavioral Theory'], answer: 1 },
+      { q: 'What should a school social worker do \'first\' when initiating a consulting relationship with a teacher?', options: ['Recruit resources', 'Identify needs', 'Build rapport'], answer: 2 },
+      { q: 'Evidence-_____ Practice (EIP) integrates student needs, research, and social work skills.', options: ['Based', 'Informed', 'Derived'], answer: 1 },
+      { q: 'Social Skills Training for Autism Spectrum Disorder (ASD) typically focuses on teaching which of the following?', options: ['Shopping and budgeting', 'Public transportation', 'Communication and problem-solving'], answer: 2 },
+      { q: 'A Manifestation Determination Review (MDR) is conducted to determine if a behavior is _____ to a student\'s disability.', options: ['Unrelated', 'Linked', 'Intended'], answer: 1 },
+      { q: 'A student living temporarily with relatives due to domestic violence is likely at which level of Maslow\'s hierarchy?', options: ['Social', 'Safety/Security', 'Esteem'], answer: 1 },
+      { q: 'Which stage of Erikson\'s theory involves children aged 3 to 6 years \'developing a sense of purpose\'?', options: ['Autonomy vs. Shame', 'Initiative vs. Guilt', 'Industry vs. Inferiority'], answer: 1 },
+      { q: 'Which Piagetian process involves the \'Steady state of cognitive processes\' where knowledge explains experience?', options: ['Intelligence', 'Equilibrium', 'Adaptation'], answer: 1 },
+      { q: 'What is \'Child Find\'?', options: ['A database of missing children', 'The duty to identify, locate, and evaluate children with disabilities', 'A school-based tutoring program'], answer: 1 },
+      { q: 'Which of these is a \'Procedural Safeguard\' under IDEA?', options: ['Right to a private school voucher', 'Right to mediation', 'Right to choose any teacher'], answer: 1 },
+      { q: 'A(n) _____ plan is for children ages 0 to 3 years and includes assessing the \'needs of the family\'.', options: ['IEP', '504', 'IFSP'], answer: 2 },
+      { q: 'Trauma-informed care shifts the question from \'What is wrong with you?\' to _____.', options: ['\'Why are you doing this?\'', '\'What happened to you?\'', '\'How can we fix this?\''], answer: 1 },
+      { q: 'In Kohlberg\'s theory, behavior based on \'internal ethical principles\' represents which level?', options: ['Conventional', 'Postconventional', 'Preconventional'], answer: 1 },
+      { q: 'Under FERPA, when a student reaches age 18, the rights regarding records transfer from the _____ to the student.', options: ['Principal', 'Parents', 'Counselor'], answer: 1 },
+      { q: 'What should a school social worker do \'first\' if a parent requests to stop IEP services immediately?', options: ['Discontinue services', 'Convene the IEP team to review services', 'Refer the parent to the dean'], answer: 1 },
+      { q: 'Which document identifies \'measurable behavioral changes expected\' and \'methods of evaluation\' for a student with challenging behaviors?', options: ['SDS', 'BIP', 'FBA'], answer: 1 },
+      { q: 'According to the Danielson Framework, Domain 2 focuses on which of the following?', options: ['Instruction', 'Planning and Preparation', 'Classroom Environment'], answer: 2 },
+      { q: 'Which Piagetian stage includes children aged 0-2 years and the development of \'object permanence\'?', options: ['Preoperational', 'Concrete Operational', 'Sensorimotor'], answer: 2 },
+      { q: 'The _____ question (SFBT) helps a client envision a future where the problem no longer exists.', options: ['Exception', 'Scaling', 'Miracle'], answer: 2 },
+      { q: 'What is the primary benefit of membership in a national school social work organization?', options: ['Medical insurance', 'Legal representation', 'Information about current research and practices'], answer: 2 },
+      { q: 'VARK learning styles include Visual, Auditory, Read/Write, and _____.', options: ['Knowledge', 'Kinesthetic', 'Verbal'], answer: 1 },
+      { q: 'In MTSS, Tier 3 involves which type of intervention?', options: ['Universal classroom lessons', 'Individualized/intensive supports', 'Group social skills training'], answer: 1 },
+      { q: 'The \'Danielson Model\' uses four domains to organize teacher and school support personnel efforts to meet student needs. How many components are clustered into these domains?', options: ['10', '15', '22'], answer: 2 },
+      { q: 'Which Erikson stage occurs in young adulthood (18-35 years) and involves \'forming solid relationships\'?', options: ['Generativity vs. Stagnation', 'Identity vs. Role Confusion', 'Intimacy vs. Isolation'], answer: 2 },
+      { q: 'What is \'ESY\' in the context of Special Education?', options: ['Early School Year', 'Extended School Year', 'Elementary Support Youth'], answer: 1 },
+    ];
+
+    function getActiveFlashcards() {
+      return state.useGeminiDeck ? flashcards.concat(geminiFlashcards) : flashcards;
+    }
+
     // ========================================================
     // UPGRADES
     // ========================================================
     const upgrades = [
-      // Tier 1 — Early game
-      { id: 'coffee', name: 'Teacher Lounge Coffee', icon: '☕', desc: '+1 pts/sec', baseCost: 15, cps: 1 },
       { id: 'clipboard', name: 'Extra Clipboard', icon: '📋', desc: '+2 click power', baseCost: 10, clickBonus: 2 },
-      // Tier 2 — Getting going
-      { id: 'crayons', name: 'Art Supplies', icon: '🖍️', desc: '+4 pts/sec', baseCost: 150, cps: 4 },
+      { id: 'coffee', name: 'Teacher Lounge Coffee', icon: '☕', desc: '+1 pts/sec', baseCost: 15, cps: 1 },
       { id: 'fidget', name: 'Fidget Tools', icon: '🌀', desc: '+5 click power', baseCost: 75, clickBonus: 5 },
-      // Tier 3 — Mid game
+      { id: 'crayons', name: 'Art Supplies', icon: '🖍️', desc: '+4 pts/sec', baseCost: 150, cps: 4 },
       { id: 'lunchgroup', name: 'Lunch Group', icon: '🪑', desc: '+12 pts/sec', baseCost: 800, cps: 12 },
-      { id: 'calming', name: 'Calming Corner', icon: '🧘', desc: '+30 pts/sec', baseCost: 2500, cps: 30 },
       { id: 'restorative', name: 'Restorative Circle', icon: '🔄', desc: '+15 click power', baseCost: 1500, clickBonus: 15 },
-      // Tier 4 — Late-mid
-      { id: 'iep_binder', name: 'Paperwork Speedrun', icon: '📚', desc: '+75 pts/sec', baseCost: 8000, cps: 75 },
+      { id: 'calming', name: 'Calming Corner', icon: '🧘', desc: '+30 pts/sec', baseCost: 2500, cps: 30 },
       { id: 'sel_curriculum', name: 'SEL Curriculum', icon: '❤️', desc: '+40 click power', baseCost: 5000, clickBonus: 40 },
-      // Tier 5 — Late game
+      { id: 'iep_binder', name: 'Paperwork Speedrun', icon: '📚', desc: '+75 pts/sec', baseCost: 8000, cps: 75 },
+      { id: 'streak_boost', name: 'Hot Streak Boost', icon: '🔥', desc: 'Hot streak multiplier +0.25x', baseCost: 25000, streakBoost: 0.25 },
       { id: 'resource_room', name: 'Resource Room', icon: '🏠', desc: '+200 pts/sec', baseCost: 30000, cps: 200 },
       { id: 'crisis_kit', name: 'Contract Negotiation Win', icon: '🤝', desc: '+500 pts/sec', baseCost: 80000, cps: 500 },
       { id: 'whole_school', name: 'Whole School MTSS', icon: '🏫', desc: '+1200 pts/sec', baseCost: 200000, cps: 1200 },
-      // Special
-      { id: 'streak_boost', name: 'Hot Streak Boost', icon: '🔥', desc: 'Hot streak multiplier +0.25x', baseCost: 25000, streakBoost: 0.25 },
     ];
 
     // ========================================================
@@ -2795,6 +2957,7 @@
       prestigeMultiplier: 1,
       questionStats: {},
       mastered: {},
+      useGeminiDeck: false,
     };
 
     // ========================================================
@@ -2934,7 +3097,8 @@
       // Prioritize questions not yet mastered, weighted by fewer correct answers
       const unmastered = [];
       const masteredList = [];
-      flashcards.forEach((fc, i) => {
+      const active = getActiveFlashcards();
+      active.forEach((fc, i) => {
         if (state.mastered[i]) {
           masteredList.push(i);
         } else {
@@ -2960,7 +3124,7 @@
 
     function showQuiz(upgradeName, cost) {
       const qIndex = pickQuestion();
-      const fc = flashcards[qIndex];
+      const fc = getActiveFlashcards()[qIndex];
 
       quizLabel.textContent = `Answer to unlock: ${upgradeName}`;
       quizCost.textContent = fmt(cost) + ' pts';
@@ -3034,7 +3198,7 @@
       if (quizAnswered) return;
       quizAnswered = true;
 
-      const fc = flashcards[qIndex];
+      const fc = getActiveFlashcards()[qIndex];
       const isCorrect = chosenIdx === fc.answer;
 
       // Disable all options
@@ -3185,9 +3349,11 @@
       const total = state.correct + state.wrong;
       statCorrect.textContent = state.correct;
       statAccuracy.textContent = total > 0 ? Math.round((state.correct / total) * 100) + '%' : '--%';
+      const activeCount = getActiveFlashcards().length;
       const masteredCount = Object.keys(state.mastered).length;
       statMastered.textContent = masteredCount;
-      const pct = Math.round((masteredCount / flashcards.length) * 100);
+      statTotal.textContent = activeCount;
+      const pct = Math.round((masteredCount / activeCount) * 100);
       studyBarFill.style.width = pct + '%';
       studyBarText.textContent = pct + '% Mastered';
     }
@@ -3669,7 +3835,16 @@
     const reviewCloseBtn = document.getElementById('reviewCloseBtn');
     const reviewList = document.getElementById('reviewList');
     const reviewFilters = document.getElementById('reviewFilters');
+    const geminiToggle = document.getElementById('geminiToggle');
     let currentFilter = 'all';
+
+    geminiToggle.checked = state.useGeminiDeck;
+    geminiToggle.addEventListener('change', () => {
+      state.useGeminiDeck = geminiToggle.checked;
+      updateStudyStats();
+      renderReview();
+      trySave();
+    });
 
     reviewBtn.addEventListener('click', () => {
       renderReview();
@@ -3706,7 +3881,7 @@
       reviewList.innerHTML = '';
       let shown = 0;
 
-      flashcards.forEach((fc, i) => {
+      getActiveFlashcards().forEach((fc, i) => {
         const status = getQuestionStatus(i);
         if (currentFilter !== 'all' && currentFilter !== status) return;
 
@@ -3718,9 +3893,17 @@
         else if (status === 'wrong') { badgeClass = 'badge-struggling'; badgeText = 'Needs Work'; }
         else { badgeClass = 'badge-unseen'; badgeText = 'Not Seen'; }
 
+        const isGemini = i >= flashcards.length;
+        const setNum = isGemini ? i - flashcards.length + 1 : i + 1;
+        const setTotal = isGemini ? geminiFlashcards.length : flashcards.length;
+        const setLabel = isGemini
+          ? `<span class="src-ai">Generated ISBE Flashcard</span> ${setNum}/${setTotal}`
+          : `PEL Official Flashcard ${setNum}/${setTotal}`;
+
         const card = document.createElement('div');
         card.className = `review-card status-${status}`;
         card.innerHTML = `
+      <div class="rc-source">${setLabel}</div>
       <div class="rc-question">${fc.q}</div>
       <div class="rc-answer">Answer: ${fc.options[fc.answer]}</div>
       <div class="rc-stats">
