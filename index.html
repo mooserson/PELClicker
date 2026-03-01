@@ -1758,14 +1758,14 @@
     <div class="stats-bar">
       <span>Questions Correct: <span class="stat-val" id="statCorrect">0</span></span>
       <span>Accuracy: <span class="stat-val" id="statAccuracy">--%</span></span>
-      <span>Mastered: <span class="stat-val" id="statMastered">0</span>/<span id="statTotal">0</span></span>
+      <span>Learned: <span class="stat-val" id="statMastered">0</span>/<span id="statTotal">0</span></span>
     </div>
   </header>
 
   <div class="study-tracker">
     <div class="study-bar">
       <div class="study-bar-fill" id="studyBarFill" style="width:0%"></div>
-      <div class="study-bar-text" id="studyBarText">0% Mastered</div>
+      <div class="study-bar-text" id="studyBarText">0% Learned</div>
     </div>
     <button class="review-btn" id="reviewBtn">Study Review</button>
     <button class="review-btn" id="resetBtn"
@@ -1794,7 +1794,7 @@
       </div>
       <div class="review-filters" id="reviewFilters">
         <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="mastered">Mastered</button>
+        <button class="filter-btn" data-filter="mastered">Learned</button>
         <button class="filter-btn" data-filter="correct">Getting Right</button>
         <button class="filter-btn" data-filter="wrong">Getting Wrong</button>
         <button class="filter-btn" data-filter="unseen">Not Seen</button>
@@ -1859,7 +1859,7 @@
       ☀️ Summer Vacation
     </button>
     <div class="prestige-desc" id="prestigeDesc">Reach 500K total PEL bux to prestige</div>
-    <!-- <div class="prestige-desc" style="margin-top:2px; color:#6b7a8d; font-size:0.72em;">Resets: PEL bux, upgrades, achievements &nbsp;|&nbsp; Keeps: study progress, mastered questions &nbsp;|&nbsp; Gain: permanent multiplier on all earnings</div> -->
+    <!-- <div class="prestige-desc" style="margin-top:2px; color:#6b7a8d; font-size:0.72em;">Resets: PEL bux, upgrades, achievements &nbsp;|&nbsp; Keeps: study progress, learned questions &nbsp;|&nbsp; Gain: permanent multiplier on all earnings</div> -->
   </div>
 
   <!-- QUIZ MODAL -->
@@ -1893,6 +1893,27 @@
       <div class="prestige-confirm-buttons">
         <button class="prestige-confirm-btn cancel" id="prestigeCancel">Not Yet</button>
         <button class="prestige-confirm-btn confirm" id="prestigeConfirm">Let's Go! ☀️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESET CONFIRMATION MODAL -->
+  <div class="modal-overlay" id="resetOverlay">
+    <div class="quiz-modal prestige-confirm-modal">
+      <div class="prestige-confirm-icon">🗑️</div>
+      <div class="prestige-confirm-title">Reset Game</div>
+      <div class="prestige-confirm-body">
+        This will erase your <strong>PEL bux</strong>, <strong>upgrades</strong>, and <strong>achievements</strong>.
+      </div>
+      <div class="prestige-confirm-buttons" style="flex-direction:column;gap:10px;">
+        <button class="prestige-confirm-btn confirm" id="resetKeepStudy" style="background:linear-gradient(135deg,#4ecdc4,#44b09e);font-size:0.9em;">
+          Reset Game, Keep Study Progress 📚
+        </button>
+        <button class="prestige-confirm-btn" id="resetFull"
+          style="background:linear-gradient(135deg,#e53e3e,#c53030);color:#fff;font-size:0.9em;">
+          Erase Everything
+        </button>
+        <button class="prestige-confirm-btn cancel" id="resetCancel">Never Mind</button>
       </div>
     </div>
   </div>
@@ -2953,13 +2974,13 @@
       { id: 'calming_corner', name: 'Safe Space', icon: '🧘', desc: 'Buy 3 Calming Corners', check: s => (s.upgrades['calming'] || 0) >= 3 },
       { id: 'sel_bought', name: 'Heart of SEL', icon: '❤️', desc: 'Buy 3 SEL Curriculums', check: s => (s.upgrades['sel_curriculum'] || 0) >= 3 },
       { id: 'mtss_built', name: 'Tiered Support', icon: '🏫', desc: 'Buy 3 Whole School MTSS', check: s => (s.upgrades['whole_school'] || 0) >= 3 },
-      // Mastery milestones
-      { id: 'master5', name: 'First Five', icon: '🌱', desc: 'Master 5 flashcards', check: s => Object.keys(s.mastered).length >= 5 },
-      { id: 'master10', name: 'Building Rapport', icon: '🤝', desc: 'Master 10 flashcards', check: s => Object.keys(s.mastered).length >= 10 },
-      { id: 'master25', name: 'Quarter Master', icon: '📚', desc: 'Master 25% of flashcards', check: s => Object.keys(s.mastered).length >= Math.floor(flashcards.length * 0.25) },
-      { id: 'master50', name: 'Half Way There', icon: '🌟', desc: 'Master 50% of flashcards', check: s => Object.keys(s.mastered).length >= Math.floor(flashcards.length * 0.50) },
-      { id: 'master75', name: 'Almost There', icon: '🏆', desc: 'Master 75% of flashcards', check: s => Object.keys(s.mastered).length >= Math.floor(flashcards.length * 0.75) },
-      { id: 'master100', name: 'PEL MASTER', icon: '🎯', desc: 'Master ALL flashcards!', check: s => Object.keys(s.mastered).length >= flashcards.length },
+      // Mastery milestones (official deck only)
+      { id: 'master5', name: 'First Five', icon: '🌱', desc: 'Learn 5 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 5 },
+      { id: 'master10', name: 'Building Rapport', icon: '🤝', desc: 'Learn 10 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 10 },
+      { id: 'master25', name: 'Quarter Master', icon: '📚', desc: 'Learn 25% of official cards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= Math.floor(flashcards.length * 0.25) },
+      { id: 'master50', name: 'Half Way There', icon: '🌟', desc: 'Learn 50% of official cards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= Math.floor(flashcards.length * 0.50) },
+      { id: 'master75', name: 'Almost There', icon: '🏆', desc: 'Learn 75% of official cards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= Math.floor(flashcards.length * 0.75) },
+      { id: 'master100', name: 'PEL MASTER', icon: '🎯', desc: 'Learn ALL official cards!', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= flashcards.length },
       // Prestige
       { id: 'first_prestige', name: 'Summer Break', icon: '☀️', desc: 'Prestige for the first time', check: s => s.prestigeLevel >= 1 },
       { id: 'prestige2', name: 'Sophomore Year', icon: '📅', desc: 'Prestige 2 times', check: s => s.prestigeLevel >= 2 },
@@ -3218,7 +3239,7 @@
       screenFlash('green');
       const popup = document.createElement('div');
       popup.className = 'mastery-popup';
-      popup.innerHTML = '<span class="mastery-icon">🎯</span><span class="mastery-text">MASTERED!</span>';
+      popup.innerHTML = '<span class="mastery-icon">🎯</span><span class="mastery-text">LEARNED!</span>';
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 1600);
 
@@ -3282,7 +3303,7 @@
         // Master after 3 correct IN A ROW
         if (state.questionStats[qIndex].consecutiveRight >= 3 && !state.mastered[qIndex]) {
           state.mastered[qIndex] = true;
-          showToast('🎯', 'Question Mastered!', '3 correct in a row!');
+          showToast('🎯', 'Question Learned!', '3 correct in a row!');
           showMasteryCelebration();
         }
 
@@ -3407,7 +3428,7 @@
       statTotal.textContent = activeCount;
       const pct = Math.round((masteredCount / activeCount) * 100);
       studyBarFill.style.width = pct + '%';
-      studyBarText.textContent = pct + '% Mastered';
+      studyBarText.textContent = pct + '% Learned';
     }
 
     // ========================================================
@@ -3873,8 +3894,23 @@
     // ========================================================
     // RESET
     // ========================================================
+    const resetOverlay = document.getElementById('resetOverlay');
     document.getElementById('resetBtn').addEventListener('click', () => {
-      if (!confirm('Reset all progress? This will erase your score, upgrades, achievements, and study stats.')) return;
+      resetOverlay.classList.add('active');
+    });
+    document.getElementById('resetCancel').addEventListener('click', () => {
+      resetOverlay.classList.remove('active');
+    });
+    resetOverlay.addEventListener('click', (e) => {
+      if (e.target === resetOverlay) resetOverlay.classList.remove('active');
+    });
+    document.getElementById('resetKeepStudy').addEventListener('click', () => {
+      const saved = { correct: state.correct, wrong: state.wrong, questionStats: state.questionStats, mastered: state.mastered, useGeminiDeck: state.useGeminiDeck };
+      localStorage.removeItem('pelclicker');
+      localStorage.setItem('pelclicker', JSON.stringify(saved));
+      location.reload();
+    });
+    document.getElementById('resetFull').addEventListener('click', () => {
       localStorage.removeItem('pelclicker');
       location.reload();
     });
@@ -3940,7 +3976,7 @@
         shown++;
         const stats = state.questionStats[i] || { right: 0, wrong: 0 };
         let badgeClass, badgeText;
-        if (status === 'mastered') { badgeClass = 'badge-mastered'; badgeText = 'Mastered'; }
+        if (status === 'mastered') { badgeClass = 'badge-mastered'; badgeText = 'Learned'; }
         else if (status === 'correct') { badgeClass = 'badge-learning'; badgeText = 'Learning'; }
         else if (status === 'wrong') { badgeClass = 'badge-struggling'; badgeText = 'Needs Work'; }
         else { badgeClass = 'badge-unseen'; badgeText = 'Not Seen'; }
