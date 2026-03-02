@@ -3569,7 +3569,7 @@
 
     // Close on overlay click (outside modal)
     quizOverlay.addEventListener('click', (e) => {
-      if (e.target === quizOverlay) {
+      if (e.target === quizOverlay && quizAnswered) {
         quizOverlay.classList.remove('active');
         pendingUpgrade = null;
       }
