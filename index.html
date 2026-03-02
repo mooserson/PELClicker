@@ -383,23 +383,21 @@
     }
 
     /* === MASTERY CELEBRATION === */
-    .mastery-popup {
+    .learned-popup, .pto-popup {
       position: fixed;
-      top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
       z-index: 260;
       pointer-events: none;
       text-align: center;
-      animation: masteryBoom 1.5s ease-out forwards;
+      animation: celebrationBoom 1.5s ease-out forwards;
     }
 
-    .mastery-popup .mastery-icon {
+    .learned-popup .learned-icon, .pto-popup .pto-icon {
       font-size: 4em;
       display: block;
     }
 
-    .mastery-popup .mastery-text {
+    .learned-popup .learned-text {
       font-family: 'Fredoka One', cursive;
       font-size: 1.5em;
       color: #f6d365;
@@ -407,27 +405,28 @@
       margin-top: 4px;
     }
 
-    @keyframes masteryBoom {
+    @keyframes celebrationBoom {
       0% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(0.5);
+        scale: 0.5;
       }
 
       20% {
-        transform: translate(-50%, -50%) scale(1.2);
+        scale: 1.2;
       }
 
       40% {
-        transform: translate(-50%, -50%) scale(1);
+        scale: 1;
       }
 
       100% {
         opacity: 0;
-        transform: translate(-50%, -60%) scale(1.1);
+        scale: 1.1;
+        translate: 0 -20px;
       }
     }
 
-    .mastery-sparkle {
+    .celebration-sparkle {
       position: fixed;
       pointer-events: none;
       z-index: 255;
@@ -487,23 +486,6 @@
       100% {
         opacity: 0;
       }
-    }
-
-    /* === PTO CELEBRATION === */
-    .pto-popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 260;
-      pointer-events: none;
-      text-align: center;
-      animation: masteryBoom 1.5s ease-out forwards;
-    }
-
-    .pto-popup .pto-icon {
-      font-size: 4em;
-      display: block;
     }
 
     .pto-popup .pto-text {
@@ -1076,8 +1058,7 @@
       right: 16px;
       z-index: 300;
       display: flex;
-      flex-direction: row-reverse;
-      align-items: flex-start;
+      flex-direction: column;
       gap: 8px;
     }
 
@@ -3083,6 +3064,7 @@
       { id: 'mtss_built', name: 'Tiered Support', icon: '🏫', desc: 'Buy 3 Whole School MTSS', check: s => (s.upgrades['whole_school'] || 0) >= 3 },
       // PTO
       { id: 'pto_maxed', name: 'PTO Maxed', icon: '🏖️', desc: 'Bank all 3 PTO days', check: s => s.ptoDays >= 3 },
+      { id: 'never_sick', name: 'Never Gets Sick', icon: '💪', desc: 'Summer with full PTO', check: s => s.prestigedWithFullPTO },
       // Mastery milestones (official deck only)
       { id: 'master5', name: 'First Five', icon: '🌱', desc: 'Learn 5 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 5 },
       { id: 'master10', name: 'Building Rapport', icon: '🤝', desc: 'Learn 10 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 10 },
@@ -3134,6 +3116,7 @@
       useGeminiDeck: false,
       ptoDays: 0,              // PTO days stored (0-3)
       ptoCorrectWhileHot: 0,   // correct answers while hot, toward next PTO
+      prestigedWithFullPTO: false, // survived a year without using PTO
     };
 
     // ========================================================
@@ -3346,51 +3329,43 @@
       setTimeout(() => flash.remove(), 700);
     }
 
-    function showMasteryCelebration() {
-      screenFlash('green');
-      const popup = document.createElement('div');
-      popup.className = 'mastery-popup';
-      popup.innerHTML = '<span class="mastery-icon">🎯</span><span class="mastery-text">LEARNED!</span>';
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 1600);
+    let activeCelebrations = 0;
 
-      // Sparkles
-      const sparkles = ['⭐', '✨', '🌟', '💫', '⭐', '✨'];
+    function showCelebration(cssClass, icon, text, flashType, sparkles) {
+      const slot = activeCelebrations++;
+      const yOffset = slot * -100;
+
+      if (flashType) screenFlash(flashType);
+      const popup = document.createElement('div');
+      popup.className = cssClass;
+      popup.style.top = `calc(50% + ${yOffset}px)`;
+      popup.style.transform = 'translateX(-50%)';
+      const prefix = cssClass.replace('-popup', '');
+      popup.innerHTML = `<span class="${prefix}-icon">${icon}</span><span class="${prefix}-text">${text}</span>`;
+      document.body.appendChild(popup);
+      setTimeout(() => { popup.remove(); activeCelebrations--; }, 1600);
+
+      const cy = window.innerHeight / 2 + yOffset;
       sparkles.forEach((s, i) => {
         const el = document.createElement('div');
-        el.className = 'mastery-sparkle';
+        el.className = 'celebration-sparkle';
         el.textContent = s;
         const angle = (i / sparkles.length) * Math.PI * 2;
         const dist = 80 + Math.random() * 60;
         el.style.left = (window.innerWidth / 2 + Math.cos(angle) * dist) + 'px';
-        el.style.top = (window.innerHeight / 2 + Math.sin(angle) * dist) + 'px';
+        el.style.top = (cy + Math.sin(angle) * dist) + 'px';
         el.style.animationDelay = (i * 0.08) + 's';
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 1200);
       });
     }
 
-    function showPTOCelebration(text) {
-      screenFlash('gold');
-      const popup = document.createElement('div');
-      popup.className = 'pto-popup';
-      popup.innerHTML = `<span class="pto-icon">😎</span><span class="pto-text">${text}</span>`;
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 1600);
+    function showLearnedCelebration() {
+      showCelebration('learned-popup', '🎯', 'LEARNED!', 'green', ['⭐', '✨', '🌟', '💫', '⭐', '✨']);
+    }
 
-      const sparkles = ['🏖️', '😎', '🌴', '☀️', '🕶️', '✨'];
-      sparkles.forEach((s, i) => {
-        const el = document.createElement('div');
-        el.className = 'mastery-sparkle';
-        el.textContent = s;
-        const angle = (i / sparkles.length) * Math.PI * 2;
-        const dist = 80 + Math.random() * 60;
-        el.style.left = (window.innerWidth / 2 + Math.cos(angle) * dist) + 'px';
-        el.style.top = (window.innerHeight / 2 + Math.sin(angle) * dist) + 'px';
-        el.style.animationDelay = (i * 0.08) + 's';
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 1200);
-      });
+    function showPTOCelebration(text) {
+      showCelebration('pto-popup', '😎', text, 'gold', ['🏖️', '😎', '🌴', '☀️', '🕶️', '✨']);
     }
 
     function quizFloatNumber(text, type) {
@@ -3425,6 +3400,8 @@
       if (!state.questionStats[qIndex]) state.questionStats[qIndex] = { right: 0, wrong: 0, consecutiveRight: 0 };
       if (state.questionStats[qIndex].consecutiveRight === undefined) state.questionStats[qIndex].consecutiveRight = 0;
 
+      const prevTug = state.tugStreak;
+
       if (isCorrect) {
         state.correct++;
         state.streak++;
@@ -3438,7 +3415,7 @@
         if (state.questionStats[qIndex].consecutiveRight >= 3 && !state.mastered[qIndex]) {
           state.mastered[qIndex] = true;
           showToast('🎯', 'Question Learned!', '3 correct in a row!');
-          showMasteryCelebration();
+          showLearnedCelebration();
         }
 
         // PTO earning: 3 correct while hot → 1 PTO day (max 3)
@@ -3456,9 +3433,16 @@
           state.ptoCorrectWhileHot = 0;
         }
 
+        // Streak status message
         let streakMsg = '';
-        if (state.tugStreak >= STREAK_MAX) {
-          streakMsg = `<br>🔥 HOT STREAK! ${state.hotStreakMult}x generation!`;
+        if (state.tugStreak >= STREAK_MAX && prevTug < STREAK_MAX) {
+          streakMsg = `<br>🔥 HOT STREAK REACHED! ${state.hotStreakMult}x generation!`;
+        } else if (prevTug <= -STREAK_MAX && state.tugStreak > prevTug) {
+          streakMsg = `<br>💪 Cold streak broken! (${state.tugStreak}/${STREAK_MAX})`;
+        } else if (prevTug < 0 && state.tugStreak === 0) {
+          streakMsg = `<br>⚖️ Back to neutral!`;
+        } else if (prevTug < 0 && state.tugStreak < 0) {
+          streakMsg = ` (recovering: ${state.tugStreak}/${STREAK_MAX})`;
         } else if (state.tugStreak > 0) {
           streakMsg = ` (${state.tugStreak}/${STREAK_MAX} toward Hot Streak)`;
         }
@@ -3514,15 +3498,21 @@
           state.pts -= penalty;
           if (state.pts < 0) state.pts = 0;
 
-          let coldMsg = '';
+          // Streak status message
+          let streakMsg = '';
+          if (prevTug >= STREAK_MAX) {
+            streakMsg = `<br>🔥💨 Hot streak lost!`;
+          } else if (prevTug > 0) {
+            streakMsg = `<br>📉 Streak progress reset!`;
+          }
           if (state.tugStreak <= -STREAK_MAX) {
-            coldMsg = `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
+            streakMsg += `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
           } else if (state.tugStreak < 0) {
-            coldMsg = `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
+            streakMsg += `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
           }
 
           quizResult.className = 'quiz-result wrong-result';
-          quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${coldMsg}<br>The correct answer is highlighted above.`;
+          quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${streakMsg}<br>The correct answer is highlighted above.`;
           quizResult.style.display = 'block';
           quizClose.textContent = 'Close (No Purchase)';
           screenFlash('red');
@@ -3872,6 +3862,7 @@
       setTimeout(() => {
         // Capture PTO bonus before reset
         const ptoBonus = state.ptoDays * 10000;
+        if (state.ptoDays >= 3) state.prestigedWithFullPTO = true;
 
         state.prestigeLevel++;
         state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
@@ -3929,6 +3920,7 @@
         showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
         if (ptoBonus > 0) {
           showToast('🏖️', 'Unused PTO!', `+${fmt(ptoBonus)} bonus PEL bux!`);
+          showPTOCelebration(`+${fmt(ptoBonus)} PEL bux!`);
         }
         trySave();
       }, 2000);
