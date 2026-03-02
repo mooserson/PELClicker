@@ -474,6 +474,11 @@
       animation: flashIn 0.6s ease-out forwards;
     }
 
+    .screen-flash.gold {
+      background: radial-gradient(ellipse at center, rgba(246, 211, 101, 0.45) 0%, rgba(246, 211, 101, 0) 70%);
+      animation: flashIn 0.6s ease-out forwards;
+    }
+
     @keyframes flashIn {
       0% {
         opacity: 1;
@@ -482,6 +487,80 @@
       100% {
         opacity: 0;
       }
+    }
+
+    /* === PTO CELEBRATION === */
+    .pto-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 260;
+      pointer-events: none;
+      text-align: center;
+      animation: masteryBoom 1.5s ease-out forwards;
+    }
+
+    .pto-popup .pto-icon {
+      font-size: 4em;
+      display: block;
+    }
+
+    .pto-popup .pto-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.5em;
+      color: #f6d365;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      margin-top: 4px;
+    }
+
+    /* === PTO INDICATOR === */
+    .pto-indicator {
+      display: none;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.85em;
+      position: absolute;
+      top: -28px;
+      right: 0;
+    }
+
+    .pto-indicator.visible {
+      display: flex;
+    }
+
+    .pto-indicator .pto-label {
+      font-size: 0.9em;
+      margin-right: 1px;
+    }
+
+    .pto-indicator .pto-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .pto-indicator .pto-dot.filled {
+      background: #f6d365;
+      box-shadow: 0 0 6px rgba(246, 211, 101, 0.6);
+      border-color: #f6d365;
+    }
+
+    .pto-indicator .pto-dot.partial-1 {
+      background: #f6d365;
+      border-color: #f6d365;
+      opacity: 0.45;
+      box-shadow: 0 0 5px rgba(246, 211, 101, 0.5);
+    }
+
+    .pto-indicator .pto-dot.partial-2 {
+      background: #f6d365;
+      border-color: #f6d365;
+      opacity: 0.75;
+      box-shadow: 0 0 8px rgba(246, 211, 101, 0.7);
     }
 
     .quiz-float-number {
@@ -997,7 +1076,8 @@
       right: 16px;
       z-index: 300;
       display: flex;
-      flex-direction: column;
+      flex-direction: row-reverse;
+      align-items: flex-start;
       gap: 8px;
     }
 
@@ -1292,6 +1372,10 @@
     .tug-end.cold-end.active {
       transform: scale(1.3);
       filter: drop-shadow(0 0 12px #f56565);
+    }
+
+    .tug-end.hot-end {
+      position: relative;
     }
 
     .tug-end.hot-end.active {
@@ -1834,7 +1918,14 @@
         <span class="tug-puck-icon" id="tugPuckIcon">⚖️</span>
       </div>
     </div>
-    <div class="tug-end hot-end">🔥</div>
+    <div class="tug-end hot-end">🔥
+      <div class="pto-indicator" id="ptoIndicator">
+        <span class="pto-label">🏖️</span>
+        <span class="pto-dot" id="ptoDot0"></span>
+        <span class="pto-dot" id="ptoDot1"></span>
+        <span class="pto-dot" id="ptoDot2"></span>
+      </div>
+    </div>
   </div>
   <div class="tug-status-bar" id="tugStatus"></div>
 
@@ -2979,7 +3070,7 @@
       { id: 'twofifty_right', name: 'ISBE Insider', icon: '🏛️', desc: 'Answer 250 questions correctly', check: s => s.correct >= 250 },
       // Streaks
       { id: 'streak5', name: 'On a Roll', icon: '🔥', desc: 'Get 3 correct in a row', check: s => s.bestStreak >= 3 },
-      { id: 'streak10', name: 'Unstoppable', icon: '💫', desc: 'Get 10 correct in a row', check: s => s.bestStreak >= 10 },
+      { id: 'streak15', name: 'Unstoppable', icon: '💫', desc: 'Get 15 correct in a row', check: s => s.bestStreak >= 15 },
       { id: 'perfect10', name: 'Perfect 10', icon: '💯', desc: 'Answer 10 in a row without a miss', check: s => s.bestStreak >= 10 },
       { id: 'streak20', name: 'Crisis-Proof', icon: '🛡️', desc: 'Get 20 correct in a row', check: s => s.bestStreak >= 20 },
       // Shopping
@@ -2990,6 +3081,8 @@
       { id: 'calming_corner', name: 'Safe Space', icon: '🧘', desc: 'Buy 3 Calming Corners', check: s => (s.upgrades['calming'] || 0) >= 3 },
       { id: 'sel_bought', name: 'Heart of SEL', icon: '❤️', desc: 'Buy 3 SEL Curriculums', check: s => (s.upgrades['sel_curriculum'] || 0) >= 3 },
       { id: 'mtss_built', name: 'Tiered Support', icon: '🏫', desc: 'Buy 3 Whole School MTSS', check: s => (s.upgrades['whole_school'] || 0) >= 3 },
+      // PTO
+      { id: 'pto_maxed', name: 'PTO Maxed', icon: '🏖️', desc: 'Bank all 3 PTO days', check: s => s.ptoDays >= 3 },
       // Mastery milestones (official deck only)
       { id: 'master5', name: 'First Five', icon: '🌱', desc: 'Learn 5 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 5 },
       { id: 'master10', name: 'Building Rapport', icon: '🤝', desc: 'Learn 10 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 10 },
@@ -3039,6 +3132,8 @@
       questionStats: {},
       mastered: {},
       useGeminiDeck: false,
+      ptoDays: 0,              // PTO days stored (0-3)
+      ptoCorrectWhileHot: 0,   // correct answers while hot, toward next PTO
     };
 
     // ========================================================
@@ -3275,6 +3370,29 @@
       });
     }
 
+    function showPTOCelebration(text) {
+      screenFlash('gold');
+      const popup = document.createElement('div');
+      popup.className = 'pto-popup';
+      popup.innerHTML = `<span class="pto-icon">😎</span><span class="pto-text">${text}</span>`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 1600);
+
+      const sparkles = ['🏖️', '😎', '🌴', '☀️', '🕶️', '✨'];
+      sparkles.forEach((s, i) => {
+        const el = document.createElement('div');
+        el.className = 'mastery-sparkle';
+        el.textContent = s;
+        const angle = (i / sparkles.length) * Math.PI * 2;
+        const dist = 80 + Math.random() * 60;
+        el.style.left = (window.innerWidth / 2 + Math.cos(angle) * dist) + 'px';
+        el.style.top = (window.innerHeight / 2 + Math.sin(angle) * dist) + 'px';
+        el.style.animationDelay = (i * 0.08) + 's';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+      });
+    }
+
     function quizFloatNumber(text, type) {
       const el = document.createElement('div');
       el.className = 'quiz-float-number ' + type;
@@ -3323,6 +3441,21 @@
           showMasteryCelebration();
         }
 
+        // PTO earning: 3 correct while hot → 1 PTO day (max 3)
+        let ptoMsg = '';
+        if (state.tugStreak >= STREAK_MAX && state.ptoDays < 3) {
+          state.ptoCorrectWhileHot++;
+          if (state.ptoCorrectWhileHot >= 3) {
+            state.ptoDays++;
+            state.ptoCorrectWhileHot = 0;
+            showToast('🏖️', 'PTO Earned!', `${state.ptoDays}/3 days banked`);
+            showPTOCelebration('PTO EARNED!');
+            ptoMsg = `<br>🏖️ PTO day earned! (${state.ptoDays}/3)`;
+          }
+        } else if (state.tugStreak < STREAK_MAX) {
+          state.ptoCorrectWhileHot = 0;
+        }
+
         let streakMsg = '';
         if (state.tugStreak >= STREAK_MAX) {
           streakMsg = `<br>🔥 HOT STREAK! ${state.hotStreakMult}x generation!`;
@@ -3331,7 +3464,7 @@
         }
 
         quizResult.className = 'quiz-result correct-result';
-        quizResult.innerHTML = `✅ Correct! Upgrade purchased!${streakMsg}`;
+        quizResult.innerHTML = `✅ Correct! Upgrade purchased!${streakMsg}${ptoMsg}`;
         quizResult.style.display = 'block';
         quizClose.textContent = 'Continue';
         screenFlash('green');
@@ -3347,34 +3480,55 @@
       } else {
         state.wrong++;
         state.streak = 0;
-        // Negative bias: wrong answer resets positive streak to 0, otherwise decrements by 1
-        if (state.tugStreak > 0) {
-          state.tugStreak = 0;
-        } else {
-          state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
-        }
         state.questionStats[qIndex].wrong++;
         state.questionStats[qIndex].consecutiveRight = 0;
 
-        // Lose the full cost of the upgrade you were trying to buy
-        const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
-        state.pts -= penalty;
-        if (state.pts < 0) state.pts = 0;
+        // PTO protection: consume a day to keep tug streak
+        if (state.ptoDays > 0 && state.tugStreak > 0) {
+          state.ptoDays--;
+          state.ptoCorrectWhileHot = 0;
+          // tugStreak stays intact — streak saved!
 
-        let coldMsg = '';
-        if (state.tugStreak <= -STREAK_MAX) {
-          coldMsg = `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
-        } else if (state.tugStreak < 0) {
-          coldMsg = `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
+          const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
+          state.pts -= penalty;
+          if (state.pts < 0) state.pts = 0;
+
+          quizResult.className = 'quiz-result wrong-result';
+          quizResult.innerHTML = `❌ Used PTO — streak saved! 😎<br>Lost ${fmt(penalty)} pts. ${state.ptoDays} PTO day${state.ptoDays !== 1 ? 's' : ''} remaining.<br>The correct answer is highlighted above.`;
+          quizResult.style.display = 'block';
+          quizClose.textContent = 'Close (No Purchase)';
+          showPTOCelebration('STREAK SAVED!');
+          quizFloatNumber('−' + fmt(penalty), 'penalty');
+          pendingUpgrade = null;
+        } else {
+          // Normal wrong-answer logic
+          // Negative bias: wrong answer resets positive streak to 0, otherwise decrements by 1
+          if (state.tugStreak > 0) {
+            state.tugStreak = 0;
+          } else {
+            state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
+          }
+          state.ptoCorrectWhileHot = 0;
+
+          const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
+          state.pts -= penalty;
+          if (state.pts < 0) state.pts = 0;
+
+          let coldMsg = '';
+          if (state.tugStreak <= -STREAK_MAX) {
+            coldMsg = `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
+          } else if (state.tugStreak < 0) {
+            coldMsg = `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
+          }
+
+          quizResult.className = 'quiz-result wrong-result';
+          quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${coldMsg}<br>The correct answer is highlighted above.`;
+          quizResult.style.display = 'block';
+          quizClose.textContent = 'Close (No Purchase)';
+          screenFlash('red');
+          quizFloatNumber('−' + fmt(penalty), 'penalty');
+          pendingUpgrade = null;
         }
-
-        quizResult.className = 'quiz-result wrong-result';
-        quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${coldMsg}<br>The correct answer is highlighted above.`;
-        quizResult.style.display = 'block';
-        quizClose.textContent = 'Close (No Purchase)';
-        screenFlash('red');
-        quizFloatNumber('−' + fmt(penalty), 'penalty');
-        pendingUpgrade = null;
       }
 
       updateTugBar();
@@ -3716,12 +3870,15 @@
       prestigeBtn.disabled = true;
 
       setTimeout(() => {
+        // Capture PTO bonus before reset
+        const ptoBonus = state.ptoDays * 10000;
+
         state.prestigeLevel++;
         state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
 
         // Reset game progress
-        state.pts = 0;
-        state.totalPts = 0;
+        state.pts = ptoBonus;
+        state.totalPts = ptoBonus;
         state.clickPower = 1;
         state.perSecond = 0;
         state.upgrades = {};
@@ -3732,6 +3889,8 @@
         state.tugStreak = 0;
         state.hotStreakMult = 2;   // reset to base (upgrades are wiped)
         state.coldDebuff = 0.5;   // reset to base
+        state.ptoDays = 0;
+        state.ptoCorrectWhileHot = 0;
         // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
 
         shopBuilt = false;
@@ -3768,6 +3927,9 @@
         updateTugBar();
         updateUI();
         showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
+        if (ptoBonus > 0) {
+          showToast('🏖️', 'Unused PTO!', `+${fmt(ptoBonus)} bonus PEL bux!`);
+        }
         trySave();
       }, 2000);
     });
@@ -3847,6 +4009,23 @@
         } else {
           tugStatus.textContent = '';
         }
+      }
+
+      // PTO indicator dots — show when player has PTO or is on hot streak
+      const ptoInd = document.getElementById('ptoIndicator');
+      if (state.ptoDays > 0 || state.tugStreak >= STREAK_MAX) {
+        ptoInd.classList.add('visible');
+        for (let i = 0; i < 3; i++) {
+          const dot = document.getElementById('ptoDot' + i);
+          dot.classList.remove('filled', 'partial-1', 'partial-2');
+          if (i < state.ptoDays) {
+            dot.classList.add('filled');
+          } else if (i === state.ptoDays && state.ptoCorrectWhileHot > 0) {
+            dot.classList.add('partial-' + state.ptoCorrectWhileHot);
+          }
+        }
+      } else {
+        ptoInd.classList.remove('visible');
       }
     }
 
