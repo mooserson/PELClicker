@@ -3960,72 +3960,87 @@
         const deposit403b = state.pts;
         if (deposit403b > 0) state.savings403b += deposit403b;
 
-        // Capture PTO bonus before reset
-        const ptoBonus = state.ptoDays * 10000;
-        if (state.ptoDays >= 3) state.prestigedWithFullPTO = true;
+        // Capture PTO days before reset
+        const ptoDaysSaved = state.ptoDays;
+        if (ptoDaysSaved >= 3) state.prestigedWithFullPTO = true;
 
-        state.prestigeLevel++;
-        state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
+        // Show staggered PTO bonus animations, then proceed with reset
+        const ptoAnimDuration = ptoDaysSaved > 0 ? ptoDaysSaved * 500 : 0;
 
-        // Reset game progress
-        state.pts = ptoBonus;
-        state.totalPts = ptoBonus;
-        state.clickPower = 1;
-        state.perSecond = 0;
-        state.upgrades = {};
-        state.achievements = {};
-        state.totalBuys = 0;
-        state.streak = 0;
-        state.bestStreak = 0;
-        state.tugStreak = 0;
-        state.hotStreakMult = 2;   // reset to base (upgrades are wiped)
-        state.coldDebuff = 0.5;   // reset to base
-        state.ptoDays = 0;
-        state.ptoCorrectWhileHot = 0;
-        // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
+        // Animate each PTO day as a separate celebration
+        for (let i = 0; i < ptoDaysSaved; i++) {
+          setTimeout(() => {
+            showPTOCelebration('PTO Bonus!');
+            quizFloatNumber('+10K PEL bux', 'reward');
+          }, i * 500);
+        }
 
-        shopBuilt = false;
+        // After all PTO animations complete, do the actual reset + fall transition
+        setTimeout(() => {
+          const ptoBonus = ptoDaysSaved * 10000;
 
-        // Animate transition from summer to fall over 2.5s
-        currentSeason = 'fall';
-        document.body.classList.remove('season-summer');
-        document.body.classList.add('season-fall');
-        startAmbient('fall');
-        showSeasonBanner('fall');
+          state.prestigeLevel++;
+          state.prestigeMultiplier = state.prestigeLevel * 0.5 + 1;
 
-        const summerC = seasonColors.summer;
-        const fallC = seasonColors.fall;
-        const transitionDuration = 2500;
-        const startTime = performance.now();
-        function animateToFall(now) {
-          const elapsed = now - startTime;
-          const t = Math.min(elapsed / transitionDuration, 1);
-          // Ease-out for a natural feel
-          const ease = 1 - Math.pow(1 - t, 3);
-          const a = lerpColor(summerC.a, fallC.a, ease);
-          const b = lerpColor(summerC.b, fallC.b, ease);
-          const c = lerpColor(summerC.c, fallC.c, ease);
-          document.body.style.background = `linear-gradient(135deg, ${rgbStr(a)} 0%, ${rgbStr(b)} 50%, ${rgbStr(c)} 100%)`;
-          if (t < 1) {
-            requestAnimationFrame(animateToFall);
-          } else {
-            summerAnimating = false;
+          // Reset game progress
+          state.pts = ptoBonus;
+          state.totalPts = ptoBonus;
+          state.clickPower = 1;
+          state.perSecond = 0;
+          state.upgrades = {};
+          state.achievements = {};
+          state.totalBuys = 0;
+          state.streak = 0;
+          state.bestStreak = 0;
+          state.tugStreak = 0;
+          state.hotStreakMult = 2;   // reset to base (upgrades are wiped)
+          state.coldDebuff = 0.5;   // reset to base
+          state.ptoDays = 0;
+          state.ptoCorrectWhileHot = 0;
+          // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
+
+          shopBuilt = false;
+
+          // Animate transition from summer to fall over 2.5s
+          currentSeason = 'fall';
+          document.body.classList.remove('season-summer');
+          document.body.classList.add('season-fall');
+          startAmbient('fall');
+          showSeasonBanner('fall');
+
+          const summerC = seasonColors.summer;
+          const fallC = seasonColors.fall;
+          const transitionDuration = 2500;
+          const startTime = performance.now();
+          function animateToFall(now) {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / transitionDuration, 1);
+            // Ease-out for a natural feel
+            const ease = 1 - Math.pow(1 - t, 3);
+            const a = lerpColor(summerC.a, fallC.a, ease);
+            const b = lerpColor(summerC.b, fallC.b, ease);
+            const c = lerpColor(summerC.c, fallC.c, ease);
+            document.body.style.background = `linear-gradient(135deg, ${rgbStr(a)} 0%, ${rgbStr(b)} 50%, ${rgbStr(c)} 100%)`;
+            if (t < 1) {
+              requestAnimationFrame(animateToFall);
+            } else {
+              summerAnimating = false;
+            }
           }
-        }
-        requestAnimationFrame(animateToFall);
+          requestAnimationFrame(animateToFall);
 
-        renderAchievements();
-        updateTugBar();
-        updateUI();
-        showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
-        if (ptoBonus > 0) {
-          showToast('🏖️', 'Unused PTO!', `+${fmt(ptoBonus)} bonus PEL bux!`);
-          showPTOCelebration(`+${fmt(ptoBonus)} PEL bux!`);
-        }
-        if (deposit403b > 0) {
-          showToast('💰', '403(b) Deposit!', `+${fmt(deposit403b)} PEL bux saved!`);
-        }
-        trySave();
+          renderAchievements();
+          updateTugBar();
+          updateUI();
+          showToast('☀️', 'Summer Vacation!', `Welcome back! ${state.prestigeMultiplier}x multiplier active.`);
+          if (ptoBonus > 0) {
+            showToast('🏖️', 'PTO Cashed Out!', `+${fmt(ptoBonus)} bonus PEL bux from ${ptoDaysSaved} PTO day${ptoDaysSaved !== 1 ? 's' : ''}!`);
+          }
+          if (deposit403b > 0) {
+            showToast('💰', '403(b) Deposit!', `+${fmt(deposit403b)} PEL bux saved!`);
+          }
+          trySave();
+        }, ptoAnimDuration);
       }, 2000);
     });
 
@@ -4163,6 +4178,10 @@
 
 
     function gameTick() {
+      if (document.getElementById('prestigeOverlay').classList.contains('active')) {
+        updateUI();
+        return;
+      }
       if (state.perSecond > 0) {
         const gain = getEffectivePerSecond() / 20;
         state.pts += gain;
