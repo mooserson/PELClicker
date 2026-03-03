@@ -12,17 +12,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PEL Clicker — Study & Click!</title>
-  <meta name="description" content="A clicker game to help you study for the Illinois PEL School Social Work exam. Answer flashcards, earn upgrades, and master the material!">
+  <meta name="description"
+    content="A clicker game to help you study for the Illinois PEL School Social Work exam. Answer flashcards, earn upgrades, and master the material!">
   <!-- Open Graph -->
   <meta property="og:title" content="PEL Clicker — Study & Click!">
-  <meta property="og:description" content="A clicker game to help you study for the Illinois PEL School Social Work exam. Answer flashcards, earn upgrades, and master the material!">
+  <meta property="og:description"
+    content="A clicker game to help you study for the Illinois PEL School Social Work exam. Answer flashcards, earn upgrades, and master the material!">
   <meta property="og:image" content="https://paulcathey.com/PELClicker/og-image.png">
   <meta property="og:url" content="https://paulcathey.com/PELClicker/">
   <meta property="og:type" content="website">
   <!-- Twitter/Discord -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PEL Clicker — Study & Click!">
-  <meta name="twitter:description" content="A clicker game to help you study for the Illinois PEL School Social Work exam.">
+  <meta name="twitter:description"
+    content="A clicker game to help you study for the Illinois PEL School Social Work exam.">
   <meta name="twitter:image" content="https://paulcathey.com/PELClicker/og-image.png">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
@@ -101,6 +104,41 @@
     .stats-bar .stat-val {
       color: #4ecdc4;
       font-weight: 700;
+    }
+
+    .stats-bar .streak-val {
+      font-weight: 700;
+      color: #8da9c4;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+
+    .stats-bar .streak-val.on-streak {
+      color: #f6d365;
+      text-shadow: 0 0 8px rgba(246, 211, 101, 0.6);
+    }
+
+    .stats-bar .streak-val.hot {
+      color: #ff6b35;
+      text-shadow: 0 0 12px rgba(255, 107, 53, 0.8);
+      animation: streakPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes streakPulse {
+
+      0%,
+      100% {
+        text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+      }
+
+      50% {
+        text-shadow: 0 0 18px rgba(255, 107, 53, 1), 0 0 30px rgba(246, 211, 101, 0.4);
+      }
+    }
+
+    .stats-bar .best-streak {
+      font-size: 0.85em;
+      color: #8da9c4;
+      opacity: 0.7;
     }
 
     /* === LAYOUT === */
@@ -382,8 +420,16 @@
       margin-top: 6px;
     }
 
+    .savings-403b {
+      font-size: 0.72em;
+      color: #a8d8a8;
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+
     /* === MASTERY CELEBRATION === */
-    .learned-popup, .pto-popup {
+    .learned-popup,
+    .pto-popup {
       position: fixed;
       left: 50%;
       z-index: 260;
@@ -392,7 +438,8 @@
       animation: celebrationBoom 1.5s ease-out forwards;
     }
 
-    .learned-popup .learned-icon, .pto-popup .pto-icon {
+    .learned-popup .learned-icon,
+    .pto-popup .pto-icon {
       font-size: 4em;
       display: block;
     }
@@ -512,8 +559,11 @@
     }
 
     .pto-indicator .pto-label {
-      font-size: 0.9em;
-      margin-right: 1px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.7em;
+      margin-right: 2px;
+      white-space: nowrap;
+      color: #f6d365;
     }
 
     .pto-indicator .pto-dot {
@@ -913,6 +963,7 @@
       font-size: 0.72em;
       color: #6b7a8d;
     }
+
     .quiz-source .src-ai {
       color: #9f7aea;
     }
@@ -1619,10 +1670,11 @@
     .gemini-toggle-row {
       margin-bottom: 12px;
       padding: 8px 12px;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
+
     .gemini-toggle-label {
       display: flex;
       align-items: center;
@@ -1632,31 +1684,36 @@
       color: #c5d5e4;
       cursor: pointer;
     }
+
     .gemini-toggle-note {
       font-size: 0.72em;
       color: #6b7a8d;
       margin-top: 4px;
       padding-left: 44px;
     }
+
     .toggle-switch {
       position: relative;
       width: 36px;
       height: 20px;
       flex-shrink: 0;
     }
+
     .toggle-switch input {
       opacity: 0;
       width: 0;
       height: 0;
     }
+
     .toggle-slider {
       position: absolute;
       inset: 0;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 20px;
       transition: background 0.25s;
       cursor: pointer;
     }
+
     .toggle-slider::before {
       content: '';
       position: absolute;
@@ -1668,10 +1725,12 @@
       border-radius: 50%;
       transition: transform 0.25s, background 0.25s;
     }
-    .toggle-switch input:checked + .toggle-slider {
-      background: rgba(78,205,196,0.25);
+
+    .toggle-switch input:checked+.toggle-slider {
+      background: rgba(78, 205, 196, 0.25);
     }
-    .toggle-switch input:checked + .toggle-slider::before {
+
+    .toggle-switch input:checked+.toggle-slider::before {
       transform: translateX(16px);
       background: #4ecdc4;
     }
@@ -1755,6 +1814,7 @@
       color: #6b7a8d;
       margin-bottom: 6px;
     }
+
     .review-card .rc-source .src-ai {
       color: #9f7aea;
     }
@@ -1825,6 +1885,16 @@
       .quiz-modal {
         padding: 18px;
       }
+
+      .pto-indicator {
+        top: auto;
+        bottom: -30px;
+        right: 10px;
+        left: auto;
+        transform: none;
+        font-size: 0.65em;
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
@@ -1840,6 +1910,8 @@
       <span>Questions Correct: <span class="stat-val" id="statCorrect">0</span></span>
       <span>Accuracy: <span class="stat-val" id="statAccuracy">--%</span></span>
       <span>Learned: <span class="stat-val" id="statMastered">0</span>/<span id="statTotal">0</span></span>
+      <span>🔥 Streak: <span class="streak-val" id="statStreak">0</span> <span class="best-streak"
+          id="statBestStreak"></span></span>
     </div>
   </header>
 
@@ -1868,10 +1940,12 @@
       </div>
       <div class="gemini-toggle-row">
         <label class="gemini-toggle-label">
-          <span class="toggle-switch"><input type="checkbox" id="geminiToggle"><span class="toggle-slider"></span></span>
+          <span class="toggle-switch"><input type="checkbox" id="geminiToggle"><span
+              class="toggle-slider"></span></span>
           Include 82 AI Cards <span style="color:#8da9c4;font-size:0.78em;">(ISBE Study Guide & Practice Tests)</span>
         </label>
-        <div class="gemini-toggle-note">AI-generated from ISBE sources. Adds some similar, but not redundant, items.</div>
+        <div class="gemini-toggle-note">AI-generated from ISBE sources. Adds some similar, but not redundant, items.
+        </div>
       </div>
       <div class="review-filters" id="reviewFilters">
         <button class="filter-btn active" data-filter="all">All</button>
@@ -1901,7 +1975,7 @@
     </div>
     <div class="tug-end hot-end">🔥
       <div class="pto-indicator" id="ptoIndicator">
-        <span class="pto-label">🏖️</span>
+        <span class="pto-label">🏖️ PTO</span>
         <span class="pto-dot" id="ptoDot0"></span>
         <span class="pto-dot" id="ptoDot1"></span>
         <span class="pto-dot" id="ptoDot2"></span>
@@ -1948,6 +2022,8 @@
     </button>
     <div class="prestige-desc" id="prestigeDesc">Reach 500K total PEL bux to prestige</div>
     <!-- <div class="prestige-desc" style="margin-top:2px; color:#6b7a8d; font-size:0.72em;">Resets: PEL bux, upgrades, achievements &nbsp;|&nbsp; Keeps: study progress, learned questions &nbsp;|&nbsp; Gain: permanent multiplier on all earnings</div> -->
+    <div class="savings-403b" id="savings403b" style="display:none;">💰 403(b) Savings: <span
+        id="savings403bAmount">0</span> PEL bux</div>
   </div>
 
   <!-- QUIZ MODAL -->
@@ -1978,6 +2054,8 @@
         multiplier!
       </div>
       <div class="prestige-confirm-next" id="prestigeConfirmNext"></div>
+      <div class="prestige-confirm-deposit" id="prestigeConfirmDeposit"
+        style="font-size:0.85em; color:#a8d8a8; margin-top:4px; margin-bottom:8px;"></div>
       <div class="prestige-confirm-buttons">
         <button class="prestige-confirm-btn cancel" id="prestigeCancel">Not Yet</button>
         <button class="prestige-confirm-btn confirm" id="prestigeConfirm">Let's Go! ☀️</button>
@@ -1994,7 +2072,8 @@
         This will erase your <strong>PEL bux</strong>, <strong>upgrades</strong>, and <strong>achievements</strong>.
       </div>
       <div class="prestige-confirm-buttons" style="flex-direction:column;gap:10px;">
-        <button class="prestige-confirm-btn confirm" id="resetKeepStudy" style="background:linear-gradient(135deg,#4ecdc4,#44b09e);font-size:0.9em;">
+        <button class="prestige-confirm-btn confirm" id="resetKeepStudy"
+          style="background:linear-gradient(135deg,#4ecdc4,#44b09e);font-size:0.9em;">
           Reset Game, Keep Study Progress 📚
         </button>
         <button class="prestige-confirm-btn" id="resetFull"
@@ -3117,6 +3196,7 @@
       ptoDays: 0,              // PTO days stored (0-3)
       ptoCorrectWhileHot: 0,   // correct answers while hot, toward next PTO
       prestigedWithFullPTO: false, // survived a year without using PTO
+      savings403b: 0,              // lifetime 403(b) retirement savings
     };
 
     // ========================================================
@@ -3144,6 +3224,8 @@
     const statTotal = document.getElementById('statTotal');
     const studyBarFill = document.getElementById('studyBarFill');
     const studyBarText = document.getElementById('studyBarText');
+    const statStreak = document.getElementById('statStreak');
+    const statBestStreak = document.getElementById('statBestStreak');
 
     statTotal.textContent = flashcards.length;
 
@@ -3824,6 +3906,14 @@
       } else {
         prestigeMult.textContent = '';
       }
+
+      const savings403bEl = document.getElementById('savings403b');
+      if (state.savings403b > 0) {
+        savings403bEl.style.display = '';
+        document.getElementById('savings403bAmount').textContent = fmt(state.savings403b);
+      } else {
+        savings403bEl.style.display = 'none';
+      }
     }
 
     function summerBurst() {
@@ -3838,6 +3928,12 @@
       // Show prestige confirmation modal
       const nextMult = ((state.prestigeLevel + 1) * 0.5 + 1).toFixed(1);
       document.getElementById('prestigeConfirmNext').textContent = `Year ${getYear() + 1} multiplier: ${nextMult}x`;
+      const depositEl = document.getElementById('prestigeConfirmDeposit');
+      if (state.pts > 0) {
+        depositEl.textContent = `💰 403(b) deposit: ${fmt(state.pts)} PEL bux`;
+      } else {
+        depositEl.textContent = '';
+      }
       document.getElementById('prestigeOverlay').classList.add('active');
     });
 
@@ -3860,6 +3956,10 @@
       prestigeBtn.disabled = true;
 
       setTimeout(() => {
+        // Deposit current PEL bux into 403(b) savings
+        const deposit403b = state.pts;
+        if (deposit403b > 0) state.savings403b += deposit403b;
+
         // Capture PTO bonus before reset
         const ptoBonus = state.ptoDays * 10000;
         if (state.ptoDays >= 3) state.prestigedWithFullPTO = true;
@@ -3921,6 +4021,9 @@
         if (ptoBonus > 0) {
           showToast('🏖️', 'Unused PTO!', `+${fmt(ptoBonus)} bonus PEL bux!`);
           showPTOCelebration(`+${fmt(ptoBonus)} PEL bux!`);
+        }
+        if (deposit403b > 0) {
+          showToast('💰', '403(b) Deposit!', `+${fmt(deposit403b)} PEL bux saved!`);
         }
         trySave();
       }, 2000);
@@ -4049,6 +4152,13 @@
       renderShop();
       updateTugBar();
       updatePrestige();
+
+      // Streak display
+      statStreak.textContent = state.streak;
+      statStreak.className = 'streak-val' +
+        (state.tugStreak >= STREAK_MAX ? ' hot' :
+          state.streak > 0 ? ' on-streak' : '');
+      statBestStreak.textContent = state.bestStreak > 0 ? `(best: ${state.bestStreak})` : '';
     }
 
 
