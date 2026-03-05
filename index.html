@@ -3241,22 +3241,15 @@
       { id: 'fifty_right', name: 'PEL Scholar', icon: '🧠', desc: 'Answer 50 questions correctly', check: s => s.correct >= 50 },
       { id: 'hundred_right', name: 'Walking Encyclopedia', icon: '📕', desc: 'Answer 100 questions correctly', check: s => s.correct >= 100 },
       { id: 'twofifty_right', name: 'ISBE Insider', icon: '🏛️', desc: 'Answer 250 questions correctly', check: s => s.correct >= 250 },
-      // Streaks
+      // Correct answers
       { id: 'streak5', name: 'On a Roll', icon: '🔥', desc: 'Get 3 correct in a row', check: s => s.bestStreak >= 3 },
-      { id: 'streak15', name: 'Unstoppable', icon: '💫', desc: 'Get 15 correct in a row', check: s => s.bestStreak >= 15 },
       { id: 'perfect10', name: 'Perfect 10', icon: '💯', desc: 'Answer 10 in a row without a miss', check: s => s.bestStreak >= 10 },
+      { id: 'streak15', name: 'Unstoppable', icon: '💫', desc: 'Get 15 correct in a row', check: s => s.bestStreak >= 15 },
       { id: 'streak20', name: 'Crisis-Proof', icon: '🛡️', desc: 'Get 20 correct in a row', check: s => s.bestStreak >= 20 },
-      // Shopping
-      { id: 'five_buys', name: 'Well Equipped', icon: '🧰', desc: 'Buy 5 upgrades', check: s => s.totalBuys >= 5 },
-      { id: 'ten_buys', name: 'Resource Room Ready', icon: '🗄️', desc: 'Buy 10 upgrades', check: s => s.totalBuys >= 10 },
-      { id: 'twenty_buys', name: 'Budget Master', icon: '💰', desc: 'Buy 20 upgrades', check: s => s.totalBuys >= 20 },
-      // Specific upgrades (buy 3+)
-      { id: 'calming_corner', name: 'Safe Space', icon: '🧘', desc: 'Buy 3 Calming Corners', check: s => (s.upgrades['calming'] || 0) >= 3 },
-      { id: 'sel_bought', name: 'Heart of SEL', icon: '❤️', desc: 'Buy 3 SEL Curriculums', check: s => (s.upgrades['sel_curriculum'] || 0) >= 3 },
-      { id: 'mtss_built', name: 'Tiered Support', icon: '🏫', desc: 'Buy 3 Whole School MTSS', check: s => (s.upgrades['whole_school'] || 0) >= 3 },
-      // PTO
-      { id: 'pto_maxed', name: 'PTO Maxed', icon: '🏖️', desc: 'Bank all 3 PTO days', check: s => s.ptoDays >= 3 },
-      { id: 'never_sick', name: 'Never Gets Sick', icon: '💪', desc: 'Summer with full PTO', check: s => s.prestigedWithFullPTO },
+      { id: 'wrong10', name: 'Growth Mindset', icon: '🌻', desc: 'Get 10 wrong — learning takes practice!', check: s => s.wrong >= 10 },
+      { id: 'wrong50', name: 'Resilient Practitioner', icon: '💪', desc: 'Get 50 wrong — you keep showing up!', check: s => s.wrong >= 50 },
+      { id: 'total100', name: 'Dedicated Learner', icon: '⏰', desc: 'Answer 100 total questions', check: s => (s.correct + s.wrong) >= 100 },
+      { id: 'total500', name: 'Marathon Studier', icon: '🏃', desc: 'Answer 500 total questions', check: s => (s.correct + s.wrong) >= 500 },
       // Mastery milestones (official deck only)
       { id: 'master5', name: 'First Five', icon: '🌱', desc: 'Learn 5 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 5 },
       { id: 'master10', name: 'Building Rapport', icon: '🤝', desc: 'Learn 10 flashcards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= 10 },
@@ -3264,21 +3257,23 @@
       { id: 'master50', name: 'Half Way There', icon: '🌟', desc: 'Learn 50% of official cards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= Math.floor(flashcards.length * 0.50) },
       { id: 'master75', name: 'Almost There', icon: '🏆', desc: 'Learn 75% of official cards', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= Math.floor(flashcards.length * 0.75) },
       { id: 'master100', name: 'PEL MASTER', icon: '🎯', desc: 'Learn ALL official cards!', check: s => Object.keys(s.mastered).filter(k => +k < flashcards.length).length >= flashcards.length },
-      // Prestige
+      { id: 'gemini_on', name: 'Extra Credit', icon: '🤖', desc: 'Enable the AI flashcard deck', check: s => s.useGeminiDeck },
+      // Shopping
+      { id: 'five_buys', name: 'Well Equipped', icon: '🧰', desc: 'Buy 5 upgrades', check: s => s.totalBuys >= 5 },
+      { id: 'ten_buys', name: 'Resource Room Ready', icon: '🗄️', desc: 'Buy 10 upgrades', check: s => s.totalBuys >= 10 },
+      { id: 'twenty_buys', name: 'Budget Master', icon: '💰', desc: 'Buy 20 upgrades', check: s => s.totalBuys >= 20 },
+      { id: 'calming_corner', name: 'Safe Space', icon: '🧘', desc: 'Buy 3 Calming Corners', check: s => (s.upgrades['calming'] || 0) >= 3 },
+      { id: 'sel_bought', name: 'Heart of SEL', icon: '❤️', desc: 'Buy 3 SEL Curriculums', check: s => (s.upgrades['sel_curriculum'] || 0) >= 3 },
+      { id: 'mtss_built', name: 'Tiered Support', icon: '🏫', desc: 'Buy 3 Whole School MTSS', check: s => (s.upgrades['whole_school'] || 0) >= 3 },
+      // PTO & Prestige
+      { id: 'pto_maxed', name: 'PTO Maxed', icon: '🏖️', desc: 'Bank all 3 PTO days', check: s => s.ptoDays >= 3 },
+      { id: 'never_sick', name: 'Never Gets Sick', icon: '💪', desc: 'Summer with full PTO', check: s => s.prestigedWithFullPTO },
       { id: 'first_prestige', name: 'Summer Break', icon: '☀️', desc: 'Prestige for the first time', check: s => s.prestigeLevel >= 1 },
       { id: 'prestige2', name: 'Sophomore Year', icon: '📅', desc: 'Prestige 2 times', check: s => s.prestigeLevel >= 2 },
       { id: 'prestige3', name: 'Tenured', icon: '🎖️', desc: 'Prestige 3 times', check: s => s.prestigeLevel >= 3 },
       { id: 'prestige5', name: 'Veteran SSW', icon: '🦉', desc: 'Prestige 5 times', check: s => s.prestigeLevel >= 5 },
       { id: 'prestige7', name: 'Keynote Speaker', icon: '🎤', desc: 'Prestige 7 times', check: s => s.prestigeLevel >= 7 },
       { id: 'prestige10', name: 'Retirement Ready', icon: '🏖️', desc: 'Prestige 10 times', check: s => s.prestigeLevel >= 10 },
-      // Resilience
-      { id: 'wrong10', name: 'Growth Mindset', icon: '🌻', desc: 'Get 10 wrong — learning takes practice!', check: s => s.wrong >= 10 },
-      { id: 'wrong50', name: 'Resilient Practitioner', icon: '💪', desc: 'Get 50 wrong — you keep showing up!', check: s => s.wrong >= 50 },
-      // Volume
-      { id: 'total100', name: 'Dedicated Learner', icon: '⏰', desc: 'Answer 100 total questions', check: s => (s.correct + s.wrong) >= 100 },
-      { id: 'total500', name: 'Marathon Studier', icon: '🏃', desc: 'Answer 500 total questions', check: s => (s.correct + s.wrong) >= 500 },
-      // AI deck
-      { id: 'gemini_on', name: 'Extra Credit', icon: '🤖', desc: 'Enable the AI flashcard deck', check: s => s.useGeminiDeck },
       // Daily Login
       { id: 'login1', name: 'Checked In', icon: '📅', desc: 'Claim your first daily bonus', check: s => s.bestLoginStreak >= 1 },
       { id: 'login3', name: 'Consistent', icon: '📆', desc: 'Log in 3 days in a row', check: s => s.bestLoginStreak >= 3 },
