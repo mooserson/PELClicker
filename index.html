@@ -414,6 +414,23 @@
       transform: none;
     }
 
+    .prestige-btn.ready {
+      animation: prestige-pulse 1.5s ease-in-out infinite;
+      box-shadow: 0 0 20px rgba(246, 211, 101, 0.6), 0 0 40px rgba(253, 160, 133, 0.4);
+    }
+
+    @keyframes prestige-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(246, 211, 101, 0.6), 0 0 40px rgba(253, 160, 133, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 30px rgba(246, 211, 101, 0.9), 0 0 60px rgba(253, 160, 133, 0.6), 0 0 80px rgba(246, 211, 101, 0.3);
+      }
+    }
+
     .prestige-desc {
       font-size: 0.78em;
       color: #8da9c4;
@@ -1602,6 +1619,96 @@
       transform: scale(1.05);
     }
 
+    .stats-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 20px;
+      overflow-y: auto;
+    }
+
+    .stats-overlay.active {
+      display: flex;
+    }
+
+    .stats-panel {
+      background: linear-gradient(135deg, #1a2a3a, #1f3a5a);
+      border: 2px solid rgba(78, 205, 196, 0.3);
+      border-radius: 18px;
+      padding: 24px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      animation: modalIn 0.3s ease-out;
+    }
+
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .stats-header h2 {
+      font-family: 'Fredoka One', cursive;
+      color: #4ecdc4;
+      font-size: 1.3em;
+    }
+
+    .stats-section-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.95em;
+      color: #f6d365;
+      margin: 16px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-item {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .stat-item .stat-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.15em;
+      color: #4ecdc4;
+    }
+
+    .stat-item .stat-label {
+      font-size: 0.72em;
+      color: #8da9c4;
+      margin-top: 2px;
+    }
+
+    .stat-item.wide {
+      grid-column: 1 / -1;
+    }
+
+    .stat-item.wide .stat-value {
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+
     .review-overlay {
       display: none;
       position: fixed;
@@ -1921,8 +2028,21 @@
       <div class="study-bar-text" id="studyBarText">0% Learned</div>
     </div>
     <button class="review-btn" id="reviewBtn">Study Review</button>
+    <button class="review-btn" id="statsBtn"
+      style="background:linear-gradient(135deg,#6b46c1,#805ad5);margin-left:8px;">📊 Stats</button>
     <button class="review-btn" id="resetBtn"
       style="background:linear-gradient(135deg,#e53e3e,#c53030);margin-left:8px;">Reset Game</button>
+  </div>
+
+  <!-- STATS PANEL -->
+  <div class="stats-overlay" id="statsOverlay">
+    <div class="stats-panel">
+      <div class="stats-header">
+        <h2>📊 Lifetime Stats</h2>
+        <button class="review-close-btn" id="statsCloseBtn">&times;</button>
+      </div>
+      <div id="statsContent"></div>
+    </div>
   </div>
 
   <!-- REVIEW PANEL -->
@@ -3204,6 +3324,12 @@
       lastLoginDate: null,         // ISO date string of last daily bonus claim
       loginStreak: 0,              // consecutive login days (1–5, caps at 5)
       bestLoginStreak: 0,          // lifetime best login streak
+      totalClicks: 0,              // all-time button clicks
+      totalPtsAllTime: 0,          // PEL bux earned across ALL prestiges
+      totalTimeSec: 0,             // total seconds played
+      firstPlayDate: null,         // ISO date of first session
+      fastestPrestigeMs: null,     // shortest prestige time in ms
+      currentPrestigeStart: null,  // timestamp when current prestige began
     };
 
     // ========================================================
@@ -3251,8 +3377,20 @@
     // ========================================================
     clickBtn.addEventListener('click', (e) => {
       const clickGain = Math.max(1, Math.floor(state.clickPower * state.prestigeMultiplier * getTugMultiplier()));
+      if (state.totalPts >= PRESTIGE_COST) {
+        const txt = document.createElement('div');
+        txt.className = 'click-text';
+        txt.textContent = 'Take Summer Vacation!';
+        txt.style.left = (e.clientX - 50) + 'px';
+        txt.style.top = (e.clientY - 20) + 'px';
+        document.body.appendChild(txt);
+        setTimeout(() => txt.remove(), 900);
+        return;
+      }
       state.pts += clickGain;
       state.totalPts += clickGain;
+      state.totalPtsAllTime += clickGain;
+      state.totalClicks++;
 
       clickBtn.classList.add('clicked');
       setTimeout(() => clickBtn.classList.remove('clicked'), 80);
@@ -3895,6 +4033,7 @@
       }
 
       prestigeBtn.disabled = state.totalPts < PRESTIGE_COST;
+      prestigeBtn.classList.toggle('ready', state.totalPts >= PRESTIGE_COST);
 
       if (state.totalPts >= PRESTIGE_COST) {
         const nextMult = ((state.prestigeLevel + 1) * 0.5 + 1).toFixed(1);
@@ -4006,6 +4145,16 @@
           state.ptoCorrectWhileHot = 0;
           // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
           // Keep: lastLoginDate, loginStreak, bestLoginStreak (meta progress)
+          // Keep: totalClicks, totalPtsAllTime, totalTimeSec, firstPlayDate, fastestPrestigeMs, bestLoginStreak
+
+          // Track fastest prestige
+          if (state.currentPrestigeStart) {
+            const elapsed = Date.now() - state.currentPrestigeStart;
+            if (!state.fastestPrestigeMs || elapsed < state.fastestPrestigeMs) {
+              state.fastestPrestigeMs = elapsed;
+            }
+          }
+          state.currentPrestigeStart = Date.now();
 
           shopBuilt = false;
 
@@ -4190,11 +4339,14 @@
         updateUI();
         return;
       }
-      if (state.perSecond > 0) {
+      if (state.perSecond > 0 && state.totalPts < PRESTIGE_COST) {
         const gain = getEffectivePerSecond() / 20;
         state.pts += gain;
         state.totalPts += gain;
+        state.totalPtsAllTime += gain;
       }
+      // Track play time (gameTick runs every 50ms)
+      state.totalTimeSec += 0.05;
 
 
       updateUI();
@@ -4239,7 +4391,7 @@
       if (e.target === resetOverlay) resetOverlay.classList.remove('active');
     });
     document.getElementById('resetKeepStudy').addEventListener('click', () => {
-      const saved = { correct: state.correct, wrong: state.wrong, questionStats: state.questionStats, mastered: state.mastered, useGeminiDeck: state.useGeminiDeck, lastLoginDate: state.lastLoginDate, loginStreak: state.loginStreak, bestLoginStreak: state.bestLoginStreak };
+      const saved = { correct: state.correct, wrong: state.wrong, questionStats: state.questionStats, mastered: state.mastered, useGeminiDeck: state.useGeminiDeck, lastLoginDate: state.lastLoginDate, loginStreak: state.loginStreak, bestLoginStreak: state.bestLoginStreak, totalClicks: state.totalClicks, totalPtsAllTime: state.totalPtsAllTime, totalTimeSec: state.totalTimeSec, firstPlayDate: state.firstPlayDate, fastestPrestigeMs: state.fastestPrestigeMs, currentPrestigeStart: state.currentPrestigeStart };
       localStorage.removeItem('pelclicker');
       localStorage.setItem('pelclicker', JSON.stringify(saved));
       location.reload();
@@ -4479,7 +4631,117 @@
       trySave();
     }
 
+    // ========================================================
+    // STATS DASHBOARD
+    // ========================================================
+    const statsOverlay = document.getElementById('statsOverlay');
+    const statsContent = document.getElementById('statsContent');
+    document.getElementById('statsBtn').addEventListener('click', () => {
+      renderStats();
+      statsOverlay.classList.add('active');
+    });
+    document.getElementById('statsCloseBtn').addEventListener('click', () => {
+      statsOverlay.classList.remove('active');
+    });
+    statsOverlay.addEventListener('click', (e) => {
+      if (e.target === statsOverlay) statsOverlay.classList.remove('active');
+    });
+
+    function fmtTime(seconds) {
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      if (d > 0) return d + 'd ' + h + 'h ' + m + 'm';
+      if (h > 0) return h + 'h ' + m + 'm';
+      return m + 'm';
+    }
+
+    function fmtMs(ms) {
+      if (!ms) return '—';
+      const sec = Math.floor(ms / 1000);
+      return fmtTime(sec);
+    }
+
+    function renderStats() {
+      const allCards = getActiveFlashcards();
+      const totalAnswered = state.correct + state.wrong;
+      const accuracy = totalAnswered > 0 ? ((state.correct / totalAnswered) * 100).toFixed(1) : '0.0';
+
+      // Find hardest & easiest questions
+      let hardest = null, easiest = null;
+      let hardestAcc = Infinity, easiestAcc = -1;
+      Object.keys(state.questionStats).forEach(k => {
+        const s = state.questionStats[k];
+        const total = (s.right || 0) + (s.wrong || 0);
+        if (total < 2) return; // need at least 2 attempts
+        const acc = s.right / total;
+        if (acc < hardestAcc) { hardestAcc = acc; hardest = +k; }
+        if (acc > easiestAcc) { easiestAcc = acc; easiest = +k; }
+      });
+
+      const hardestText = hardest !== null && allCards[hardest]
+        ? allCards[hardest].question.slice(0, 50) + (allCards[hardest].question.length > 50 ? '…' : '') + ' (' + Math.round(hardestAcc * 100) + '%)'
+        : '—';
+      const easiestText = easiest !== null && allCards[easiest]
+        ? allCards[easiest].question.slice(0, 50) + (allCards[easiest].question.length > 50 ? '…' : '') + ' (' + Math.round(easiestAcc * 100) + '%)'
+        : '—';
+
+      // Career start
+      const careerDate = state.firstPlayDate
+        ? new Date(state.firstPlayDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        : 'Today!';
+
+      // Current run time
+      const currentRunMs = state.currentPrestigeStart ? Date.now() - state.currentPrestigeStart : 0;
+
+      // Avg bux per prestige
+      const avgPerPrestige = state.prestigeLevel > 0 ? fmt(Math.floor(state.totalPtsAllTime / state.prestigeLevel)) : '—';
+
+      // Avg bux per click
+      const avgPerClick = state.totalClicks > 0 ? fmt(Math.floor(state.totalPtsAllTime / state.totalClicks)) : '—';
+
+      // Questions per prestige
+      const qPerPrestige = state.prestigeLevel > 0 ? Math.round(totalAnswered / state.prestigeLevel) : totalAnswered;
+
+      statsContent.innerHTML = `
+        <div class="stats-section-title">📊 Career Stats</div>
+        <div class="stats-grid">
+          <div class="stat-item"><div class="stat-value">${fmt(Math.floor(state.totalPtsAllTime))}</div><div class="stat-label">All-Time PEL Bux</div></div>
+          <div class="stat-item"><div class="stat-value">${state.totalClicks.toLocaleString()}</div><div class="stat-label">Total Clicks</div></div>
+          <div class="stat-item"><div class="stat-value">${fmtTime(Math.floor(state.totalTimeSec))}</div><div class="stat-label">Time Played</div></div>
+          <div class="stat-item"><div class="stat-value">${careerDate}</div><div class="stat-label">Career Started</div></div>
+        </div>
+
+        <div class="stats-section-title">🎓 Study Stats</div>
+        <div class="stats-grid">
+          <div class="stat-item"><div class="stat-value">${accuracy}%</div><div class="stat-label">Lifetime Accuracy</div></div>
+          <div class="stat-item"><div class="stat-value">${qPerPrestige}</div><div class="stat-label">Questions / Prestige</div></div>
+          <div class="stat-item wide"><div class="stat-value" style="color:#fc8181;font-size:0.75em;">😰 ${hardestText}</div><div class="stat-label">Hardest Question</div></div>
+          <div class="stat-item wide"><div class="stat-value" style="color:#68d391;font-size:0.75em;">💪 ${easiestText}</div><div class="stat-label">Easiest Question</div></div>
+        </div>
+
+        <div class="stats-section-title">🏆 Records</div>
+        <div class="stats-grid">
+          <div class="stat-item"><div class="stat-value">🔥 ${state.bestStreak}</div><div class="stat-label">Best Streak</div></div>
+          <div class="stat-item"><div class="stat-value">${fmtMs(state.fastestPrestigeMs)}</div><div class="stat-label">Fastest Prestige</div></div>
+          <div class="stat-item"><div class="stat-value">${state.bestLoginStreak} / 5</div><div class="stat-label">Login Streak Record</div></div>
+          <div class="stat-item"><div class="stat-value">Year ${state.prestigeLevel + 1}</div><div class="stat-label">Current Year</div></div>
+        </div>
+
+        <div class="stats-section-title">📈 Efficiency</div>
+        <div class="stats-grid">
+          <div class="stat-item"><div class="stat-value">${avgPerPrestige}</div><div class="stat-label">Avg Bux / Prestige</div></div>
+          <div class="stat-item"><div class="stat-value">${avgPerClick}</div><div class="stat-label">Avg Bux / Click</div></div>
+          <div class="stat-item"><div class="stat-value">${fmtMs(currentRunMs)}</div><div class="stat-label">Current Run Time</div></div>
+          <div class="stat-item"><div class="stat-value">${fmt(Math.floor(state.savings403b))}</div><div class="stat-label">403(b) Balance</div></div>
+        </div>
+      `;
+    }
+
     tryLoad();
+    // Init tracking fields for first-time players
+    if (!state.firstPlayDate) state.firstPlayDate = new Date().toISOString().slice(0, 10);
+    if (!state.currentPrestigeStart) state.currentPrestigeStart = Date.now();
     geminiToggle.checked = state.useGeminiDeck;
     renderAchievements();
     updateStudyStats();
