@@ -3782,8 +3782,8 @@
             e.preventDefault();
           }
         }
-        // Enter to close after answering
-        if (key === 'Enter' && quizClose.classList.contains('show')) {
+        // Enter or Space to close after answering
+        if ((key === 'Enter' || key === ' ') && quizClose.classList.contains('show')) {
           quizClose.click();
           e.preventDefault();
         }
