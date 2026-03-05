@@ -4674,10 +4674,10 @@
       });
 
       const hardestText = hardest !== null && allCards[hardest]
-        ? allCards[hardest].question.slice(0, 50) + (allCards[hardest].question.length > 50 ? '…' : '') + ' (' + Math.round(hardestAcc * 100) + '%)'
+        ? allCards[hardest].q.slice(0, 50) + (allCards[hardest].q.length > 50 ? '…' : '') + ' (' + Math.round(hardestAcc * 100) + '%)'
         : '—';
       const easiestText = easiest !== null && allCards[easiest]
-        ? allCards[easiest].question.slice(0, 50) + (allCards[easiest].question.length > 50 ? '…' : '') + ' (' + Math.round(easiestAcc * 100) + '%)'
+        ? allCards[easiest].q.slice(0, 50) + (allCards[easiest].q.length > 50 ? '…' : '') + ' (' + Math.round(easiestAcc * 100) + '%)'
         : '—';
 
       // Career start
@@ -4749,6 +4749,9 @@
     for (let i = 0; i < 4; i++) setTimeout(spawnParticle, i * 500);
   </script>
   <script data-goatcounter="https://pelcounter.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <div
+    style="position:fixed;bottom:4px;right:8px;font-size:0.6em;color:rgba(255,255,255,0.15);pointer-events:none;z-index:9999;font-family:'Nunito',sans-serif;">
+    v1.3.0</div>
 </body>
 
 </html>
