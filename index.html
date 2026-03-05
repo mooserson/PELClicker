@@ -4665,6 +4665,7 @@
       let hardestAcc = Infinity, easiestAcc = -1;
       Object.keys(state.questionStats).forEach(k => {
         const s = state.questionStats[k];
+        if (!allCards[+k]) return; // skip cards not in active deck
         const total = (s.right || 0) + (s.wrong || 0);
         if (total < 2) return; // need at least 2 attempts
         const acc = s.right / total;
