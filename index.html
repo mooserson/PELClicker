@@ -3166,6 +3166,10 @@
       { id: 'total500', name: 'Marathon Studier', icon: '🏃', desc: 'Answer 500 total questions', check: s => (s.correct + s.wrong) >= 500 },
       // AI deck
       { id: 'gemini_on', name: 'Extra Credit', icon: '🤖', desc: 'Enable the AI flashcard deck', check: s => s.useGeminiDeck },
+      // Daily Login
+      { id: 'login1', name: 'Checked In', icon: '📅', desc: 'Claim your first daily bonus', check: s => s.bestLoginStreak >= 1 },
+      { id: 'login3', name: 'Consistent', icon: '📆', desc: 'Log in 3 days in a row', check: s => s.bestLoginStreak >= 3 },
+      { id: 'login5', name: 'Perfect Attendance', icon: '🏆', desc: 'Log in 5 days in a row for max bonus', check: s => s.bestLoginStreak >= 5 },
     ];
 
     // ========================================================
@@ -3197,6 +3201,9 @@
       ptoCorrectWhileHot: 0,   // correct answers while hot, toward next PTO
       prestigedWithFullPTO: false, // survived a year without using PTO
       savings403b: 0,              // lifetime 403(b) retirement savings
+      lastLoginDate: null,         // ISO date string of last daily bonus claim
+      loginStreak: 0,              // consecutive login days (1–5, caps at 5)
+      bestLoginStreak: 0,          // lifetime best login streak
     };
 
     // ========================================================
@@ -3998,6 +4005,7 @@
           state.ptoDays = 0;
           state.ptoCorrectWhileHot = 0;
           // Keep: correct, wrong, questionStats, mastered, prestigeLevel, prestigeMultiplier
+          // Keep: lastLoginDate, loginStreak, bestLoginStreak (meta progress)
 
           shopBuilt = false;
 
@@ -4231,7 +4239,7 @@
       if (e.target === resetOverlay) resetOverlay.classList.remove('active');
     });
     document.getElementById('resetKeepStudy').addEventListener('click', () => {
-      const saved = { correct: state.correct, wrong: state.wrong, questionStats: state.questionStats, mastered: state.mastered, useGeminiDeck: state.useGeminiDeck };
+      const saved = { correct: state.correct, wrong: state.wrong, questionStats: state.questionStats, mastered: state.mastered, useGeminiDeck: state.useGeminiDeck, lastLoginDate: state.lastLoginDate, loginStreak: state.loginStreak, bestLoginStreak: state.bestLoginStreak };
       localStorage.removeItem('pelclicker');
       localStorage.setItem('pelclicker', JSON.stringify(saved));
       location.reload();
@@ -4437,12 +4445,47 @@
     // ========================================================
     // INIT
     // ========================================================
+    // ========================================================
+    // DAILY LOGIN BONUS
+    // ========================================================
+    function checkDailyBonus() {
+      const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+      if (state.lastLoginDate === today) return; // already claimed today
+
+      // Check if yesterday — streak continues
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      if (state.lastLoginDate === yesterday) {
+        state.loginStreak = Math.min(state.loginStreak + 1, 5);
+      } else {
+        state.loginStreak = 1; // streak reset
+      }
+
+      state.lastLoginDate = today;
+      if (state.loginStreak > state.bestLoginStreak) {
+        state.bestLoginStreak = state.loginStreak;
+      }
+
+      const bonus = state.loginStreak * 10000;
+      state.pts += bonus;
+      state.totalPts += bonus;
+
+      // Show celebration after a short delay so the page renders first
+      setTimeout(() => {
+        showPTOCelebration('Day ' + state.loginStreak + ' Bonus!');
+        const formatted = bonus >= 1000 ? (bonus / 1000) + 'K' : bonus;
+        quizFloatNumber('+' + formatted + ' PEL bux', 'reward');
+      }, 600);
+
+      trySave();
+    }
+
     tryLoad();
     geminiToggle.checked = state.useGeminiDeck;
     renderAchievements();
     updateStudyStats();
     updateTugBar();
     updateUI();
+    checkDailyBonus();
 
     setInterval(gameTick, 50);
     setInterval(trySave, 10000);
