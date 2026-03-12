@@ -3563,8 +3563,13 @@
         ? `<span class="src-ai">Generated ISBE Flashcard</span> ${setNum}/${setTotal}`
         : `PEL Official Flashcard ${setNum}/${setTotal}`;
 
-      quizLabel.textContent = `Answer to unlock: ${upgradeName}`;
-      quizCost.textContent = fmt(cost) + ' pts';
+      if (state.studyMode) {
+        quizLabel.textContent = 'PEL Question';
+        quizCost.textContent = '';
+      } else {
+        quizLabel.textContent = `Answer to unlock: ${upgradeName}`;
+        quizCost.textContent = fmt(cost) + ' pts';
+      }
       quizQuestion.textContent = fc.q;
       quizOptions.innerHTML = '';
       quizAnswered = false;
@@ -3677,7 +3682,7 @@
         state.streak++;
         if (state.streak > state.bestStreak) state.bestStreak = state.streak;
         // Negative bias: if negative, only inch back by 1; if positive, increment normally
-        state.tugStreak = Math.min(STREAK_MAX, state.tugStreak + 1);
+        if (!state.studyMode) state.tugStreak = Math.min(STREAK_MAX, state.tugStreak + 1);
         state.questionStats[qIndex].right++;
         state.questionStats[qIndex].consecutiveRight++;
 
@@ -3688,110 +3693,128 @@
           showLearnedCelebration();
         }
 
-        // PTO earning: 3 correct while hot → 1 PTO day (max 3)
-        let ptoMsg = '';
-        if (state.tugStreak >= STREAK_MAX && state.ptoDays < 3) {
-          state.ptoCorrectWhileHot++;
-          if (state.ptoCorrectWhileHot >= 3) {
-            state.ptoDays++;
+        if (state.studyMode) {
+          quizResult.className = 'quiz-result correct-result';
+          quizResult.innerHTML = '✅ Correct!';
+          quizResult.style.display = 'block';
+          quizClose.textContent = 'Next Card';
+          screenFlash('green');
+        } else {
+          // PTO earning: 3 correct while hot → 1 PTO day (max 3)
+          let ptoMsg = '';
+          if (state.tugStreak >= STREAK_MAX && state.ptoDays < 3) {
+            state.ptoCorrectWhileHot++;
+            if (state.ptoCorrectWhileHot >= 3) {
+              state.ptoDays++;
+              state.ptoCorrectWhileHot = 0;
+              showToast('🏖️', 'PTO Earned!', `${state.ptoDays}/3 days banked`);
+              showPTOCelebration('PTO EARNED!');
+              ptoMsg = `<br>🏖️ PTO day earned! (${state.ptoDays}/3)`;
+            }
+          } else if (state.tugStreak < STREAK_MAX) {
             state.ptoCorrectWhileHot = 0;
-            showToast('🏖️', 'PTO Earned!', `${state.ptoDays}/3 days banked`);
-            showPTOCelebration('PTO EARNED!');
-            ptoMsg = `<br>🏖️ PTO day earned! (${state.ptoDays}/3)`;
           }
-        } else if (state.tugStreak < STREAK_MAX) {
-          state.ptoCorrectWhileHot = 0;
-        }
 
-        // Streak status message
-        let streakMsg = '';
-        if (state.tugStreak >= STREAK_MAX && prevTug < STREAK_MAX) {
-          streakMsg = `<br>🔥 HOT STREAK REACHED! ${state.hotStreakMult}x generation!`;
-        } else if (prevTug <= -STREAK_MAX && state.tugStreak > prevTug) {
-          streakMsg = `<br>💪 Cold streak broken! (${state.tugStreak}/${STREAK_MAX})`;
-        } else if (prevTug < 0 && state.tugStreak === 0) {
-          streakMsg = `<br>⚖️ Back to neutral!`;
-        } else if (prevTug < 0 && state.tugStreak < 0) {
-          streakMsg = ` (recovering: ${state.tugStreak}/${STREAK_MAX})`;
-        } else if (state.tugStreak > 0) {
-          streakMsg = ` (${state.tugStreak}/${STREAK_MAX} toward Hot Streak)`;
-        }
+          // Streak status message
+          let streakMsg = '';
+          if (state.tugStreak >= STREAK_MAX && prevTug < STREAK_MAX) {
+            streakMsg = `<br>🔥 HOT STREAK REACHED! ${state.hotStreakMult}x generation!`;
+          } else if (prevTug <= -STREAK_MAX && state.tugStreak > prevTug) {
+            streakMsg = `<br>💪 Cold streak broken! (${state.tugStreak}/${STREAK_MAX})`;
+          } else if (prevTug < 0 && state.tugStreak === 0) {
+            streakMsg = `<br>⚖️ Back to neutral!`;
+          } else if (prevTug < 0 && state.tugStreak < 0) {
+            streakMsg = ` (recovering: ${state.tugStreak}/${STREAK_MAX})`;
+          } else if (state.tugStreak > 0) {
+            streakMsg = ` (${state.tugStreak}/${STREAK_MAX} toward Hot Streak)`;
+          }
 
-        quizResult.className = 'quiz-result correct-result';
-        quizResult.innerHTML = `✅ Correct! Upgrade purchased!${streakMsg}${ptoMsg}`;
-        quizResult.style.display = 'block';
-        quizClose.textContent = 'Continue';
-        screenFlash('green');
-        const pu = pendingUpgrade ? pendingUpgrade.upgrade : null;
-        let floatText = 'Upgrade!';
-        if (pu) {
-          if (pu.cps) floatText = '+' + pu.cps + ' PEL bux/sec';
-          else if (pu.clickBonus) floatText = '+' + pu.clickBonus + ' click power';
-          else if (pu.streakBoost) floatText = '+' + pu.streakBoost + 'x streak boost';
+          quizResult.className = 'quiz-result correct-result';
+          quizResult.innerHTML = `✅ Correct! Upgrade purchased!${streakMsg}${ptoMsg}`;
+          quizResult.style.display = 'block';
+          quizClose.textContent = 'Continue';
+          screenFlash('green');
+          const pu = pendingUpgrade ? pendingUpgrade.upgrade : null;
+          let floatText = 'Upgrade!';
+          if (pu) {
+            if (pu.cps) floatText = '+' + pu.cps + ' PEL bux/sec';
+            else if (pu.clickBonus) floatText = '+' + pu.clickBonus + ' click power';
+            else if (pu.streakBoost) floatText = '+' + pu.streakBoost + 'x streak boost';
+          }
+          quizFloatNumber(floatText, 'reward');
+          completePurchase();
         }
-        quizFloatNumber(floatText, 'reward');
-        completePurchase();
       } else {
         state.wrong++;
         state.streak = 0;
         state.questionStats[qIndex].wrong++;
         state.questionStats[qIndex].consecutiveRight = 0;
 
-        // PTO protection: consume a day to keep tug streak
-        if (state.ptoDays > 0 && state.tugStreak > 0) {
-          state.ptoDays--;
-          state.ptoCorrectWhileHot = 0;
-          // tugStreak stays intact — streak saved!
-
-          const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
-          state.pts -= penalty;
-          if (state.pts < 0) state.pts = 0;
-
+        if (state.studyMode) {
           quizResult.className = 'quiz-result wrong-result';
-          quizResult.innerHTML = `❌ Used PTO — streak saved! 😎<br>Lost ${fmt(penalty)} pts. ${state.ptoDays} PTO day${state.ptoDays !== 1 ? 's' : ''} remaining.<br>The correct answer is highlighted above.`;
+          quizResult.innerHTML = '❌ Not quite! The correct answer is highlighted above.';
           quizResult.style.display = 'block';
-          quizClose.textContent = 'Close (No Purchase)';
-          showPTOCelebration('STREAK SAVED!');
-          quizFloatNumber('−' + fmt(penalty), 'penalty');
-          pendingUpgrade = null;
-        } else {
-          // Normal wrong-answer logic
-          // Negative bias: wrong answer resets positive streak to 0, otherwise decrements by 1
-          if (state.tugStreak > 0) {
-            state.tugStreak = 0;
-          } else {
-            state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
-          }
-          state.ptoCorrectWhileHot = 0;
-
-          const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
-          state.pts -= penalty;
-          if (state.pts < 0) state.pts = 0;
-
-          // Streak status message
-          let streakMsg = '';
-          if (prevTug >= STREAK_MAX) {
-            streakMsg = `<br>🔥💨 Hot streak lost!`;
-          } else if (prevTug > 0) {
-            streakMsg = `<br>📉 Streak progress reset!`;
-          }
-          if (state.tugStreak <= -STREAK_MAX) {
-            streakMsg += `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
-          } else if (state.tugStreak < 0) {
-            streakMsg += `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
-          }
-
-          quizResult.className = 'quiz-result wrong-result';
-          quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${streakMsg}<br>The correct answer is highlighted above.`;
-          quizResult.style.display = 'block';
-          quizClose.textContent = 'Close (No Purchase)';
+          quizClose.textContent = 'Next Card';
           screenFlash('red');
-          quizFloatNumber('−' + fmt(penalty), 'penalty');
-          pendingUpgrade = null;
+        } else {
+          // PTO protection: consume a day to keep tug streak
+          if (state.ptoDays > 0 && state.tugStreak > 0) {
+            state.ptoDays--;
+            state.ptoCorrectWhileHot = 0;
+            // tugStreak stays intact — streak saved!
+
+            const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
+            state.pts -= penalty;
+            if (state.pts < 0) state.pts = 0;
+
+            quizResult.className = 'quiz-result wrong-result';
+            quizResult.innerHTML = `❌ Used PTO — streak saved! 😎<br>Lost ${fmt(penalty)} pts. ${state.ptoDays} PTO day${state.ptoDays !== 1 ? 's' : ''} remaining.<br>The correct answer is highlighted above.`;
+            quizResult.style.display = 'block';
+            quizClose.textContent = 'Close (No Purchase)';
+            showPTOCelebration('STREAK SAVED!');
+            quizFloatNumber('−' + fmt(penalty), 'penalty');
+            pendingUpgrade = null;
+          } else {
+            // Normal wrong-answer logic
+            // Negative bias: wrong answer resets positive streak to 0, otherwise decrements by 1
+            if (state.tugStreak > 0) {
+              state.tugStreak = 0;
+            } else {
+              state.tugStreak = Math.max(-STREAK_MAX, state.tugStreak - 1);
+            }
+            state.ptoCorrectWhileHot = 0;
+
+            const penalty = pendingUpgrade ? pendingUpgrade.cost : 0;
+            state.pts -= penalty;
+            if (state.pts < 0) state.pts = 0;
+
+            // Streak status message
+            let streakMsg = '';
+            if (prevTug >= STREAK_MAX) {
+              streakMsg = `<br>🔥💨 Hot streak lost!`;
+            } else if (prevTug > 0) {
+              streakMsg = `<br>📉 Streak progress reset!`;
+            }
+            if (state.tugStreak <= -STREAK_MAX) {
+              streakMsg += `<br>🥶 COLD STREAK! Generation halved!<br><a href="#" class="quiz-study-link" style="color:#4ecdc4;font-weight:700;">Study PEL Flashcards →</a>`;
+            } else if (state.tugStreak < 0) {
+              streakMsg += `<br>Streak: ${state.tugStreak}/−${STREAK_MAX} toward Cold Streak...`;
+            }
+
+            quizResult.className = 'quiz-result wrong-result';
+            quizResult.innerHTML = `❌ Not quite! You lost ${fmt(penalty)} pts.${streakMsg}<br>The correct answer is highlighted above.`;
+            quizResult.style.display = 'block';
+            quizClose.textContent = 'Close (No Purchase)';
+            screenFlash('red');
+            quizFloatNumber('−' + fmt(penalty), 'penalty');
+            pendingUpgrade = null;
+          }
         }
       }
 
-      updateTugBar();
+      if (!state.studyMode) {
+        updateTugBar();
+      }
 
       quizClose.classList.add('show');
 
@@ -3807,7 +3830,9 @@
       }, 0);
 
       updateStudyStats();
-      checkAchievements();
+      if (!state.studyMode) {
+        checkAchievements();
+      }
       trySave();
     }
 
@@ -3835,13 +3860,20 @@
 
     quizClose.addEventListener('click', () => {
       quizOverlay.classList.remove('active');
+      if (state.studyMode) {
+        setTimeout(() => showQuiz(), 500);
+      }
     });
 
     // Close on overlay click (outside modal)
     quizOverlay.addEventListener('click', (e) => {
       if (e.target === quizOverlay && quizAnswered) {
         quizOverlay.classList.remove('active');
-        pendingUpgrade = null;
+        if (state.studyMode) {
+          setTimeout(() => showQuiz(), 500);
+        } else {
+          pendingUpgrade = null;
+        }
       }
     });
 
