@@ -3318,6 +3318,8 @@
       firstPlayDate: null,         // ISO date of first session
       fastestPrestigeMs: null,     // shortest prestige time in ms
       currentPrestigeStart: null,  // timestamp when current prestige began
+      studyMode: false,
+      lightTheme: false,
     };
 
     // ========================================================
@@ -4727,21 +4729,44 @@
       `;
     }
 
+    function applyMode() {
+      document.body.classList.toggle('study-mode', state.studyMode);
+      document.body.classList.toggle('light-theme', state.lightTheme);
+      document.querySelector('header h1').textContent = state.studyMode ? 'PEL Flashcards' : 'PEL Clicker';
+      const modeToggle = document.getElementById('modeToggle');
+      const themeToggle = document.getElementById('themeToggle');
+      if (modeToggle) modeToggle.checked = state.studyMode;
+      if (themeToggle) themeToggle.checked = state.lightTheme;
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) themeIcon.textContent = state.lightTheme ? '🌙' : '☀️';
+    }
+
     tryLoad();
-    // Init tracking fields for first-time players
     if (!state.firstPlayDate) state.firstPlayDate = new Date().toISOString().slice(0, 10);
     if (!state.currentPrestigeStart) state.currentPrestigeStart = Date.now();
-    geminiToggle.checked = state.useGeminiDeck;
-    renderAchievements();
-    updateStudyStats();
-    updateTugBar();
-    updateUI();
-    checkDailyBonus();
 
-    setInterval(gameTick, 50);
+    // URL param override
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'study') state.studyMode = true;
+
+    geminiToggle.checked = state.useGeminiDeck;
+    applyMode();
+    updateStudyStats();
+
+    if (!state.studyMode) {
+      renderAchievements();
+      updateTugBar();
+      updateUI();
+      checkDailyBonus();
+      setInterval(gameTick, 50);
+      setInterval(spawnParticle, 2500);
+      for (let i = 0; i < 4; i++) setTimeout(spawnParticle, i * 500);
+    } else {
+      // Auto-present first card in study mode
+      setTimeout(() => showQuiz(), 300);
+    }
+
     setInterval(trySave, 10000);
-    setInterval(spawnParticle, 2500);
-    for (let i = 0; i < 4; i++) setTimeout(spawnParticle, i * 500);
   </script>
   <script data-goatcounter="https://pelcounter.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
   <div
