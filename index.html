@@ -2015,6 +2015,17 @@
     </div>
   </header>
 
+  <div class="mode-toggles">
+    <label class="mode-toggle-label">
+      <span class="toggle-switch"><input type="checkbox" id="modeToggle"><span class="toggle-slider"></span></span>
+      Study Mode
+    </label>
+    <label class="mode-toggle-label">
+      <span class="toggle-switch"><input type="checkbox" id="themeToggle"><span class="toggle-slider"></span></span>
+      <span id="themeIcon">☀️</span> Light
+    </label>
+  </div>
+
   <div class="study-tracker">
     <div class="study-bar">
       <div class="study-bar-fill" id="studyBarFill" style="width:0%"></div>
@@ -4740,6 +4751,25 @@
       const themeIcon = document.getElementById('themeIcon');
       if (themeIcon) themeIcon.textContent = state.lightTheme ? '🌙' : '☀️';
     }
+
+    document.getElementById('modeToggle').addEventListener('change', (e) => {
+      state.studyMode = e.target.checked;
+      applyMode();
+      trySave();
+      if (state.studyMode) {
+        setTimeout(() => showQuiz(), 300);
+      } else {
+        renderAchievements();
+        updateTugBar();
+        updateUI();
+      }
+    });
+
+    document.getElementById('themeToggle').addEventListener('change', (e) => {
+      state.lightTheme = e.target.checked;
+      applyMode();
+      trySave();
+    });
 
     tryLoad();
     if (!state.firstPlayDate) state.firstPlayDate = new Date().toISOString().slice(0, 10);
