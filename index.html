@@ -3688,6 +3688,32 @@
     }
 
     function showQuiz(upgradeName, cost) {
+      // Check if all cards mastered (study mode completion)
+      if (state.studyMode) {
+        const active = getActiveFlashcards();
+        const allMastered = active.every((_, i) => state.mastered[i]);
+        if (allMastered) {
+          quizLabel.textContent = '🎉 All Cards Learned!';
+          quizCost.textContent = '';
+          quizSource.innerHTML = '';
+          quizQuestion.textContent = 'You\'ve mastered all ' + active.length + ' cards! Toggle the AI deck for more, or review your cards.';
+          quizOptions.innerHTML = '';
+          quizResult.style.display = 'none';
+          quizClose.className = 'quiz-close show';
+          quizClose.textContent = 'Review Cards';
+          quizOverlay.classList.add('active');
+          // Override close to open review instead of showing next card
+          const originalHandler = quizClose.onclick;
+          quizClose.onclick = () => {
+            quizOverlay.classList.remove('active');
+            quizClose.onclick = null;
+            renderReview();
+            reviewOverlay.classList.add('active');
+          };
+          return;
+        }
+      }
+
       const qIndex = pickQuestion();
       const fc = getActiveFlashcards()[qIndex];
 
@@ -3731,6 +3757,8 @@
     }
 
     let quizAnswered = false;
+    let gameTickInterval = null;
+    let particleInterval = null;
 
     function screenFlash(type) {
       const flash = document.createElement('div');
@@ -4959,6 +4987,22 @@
       if (themeToggle) themeToggle.checked = state.lightTheme;
       const themeIcon = document.getElementById('themeIcon');
       if (themeIcon) themeIcon.textContent = state.lightTheme ? '🌙' : '☀️';
+      const resetBody = document.querySelector('#resetOverlay .prestige-confirm-body');
+      if (resetBody) {
+        resetBody.innerHTML = state.studyMode
+          ? 'This will erase your <strong>study progress</strong> and <strong>learned cards</strong>.'
+          : 'This will erase your <strong>PEL bux</strong>, <strong>upgrades</strong>, and <strong>achievements</strong>.';
+      }
+    }
+
+    function startGameIntervals() {
+      if (!gameTickInterval) gameTickInterval = setInterval(gameTick, 50);
+      if (!particleInterval) particleInterval = setInterval(spawnParticle, 2500);
+    }
+
+    function stopGameIntervals() {
+      if (gameTickInterval) { clearInterval(gameTickInterval); gameTickInterval = null; }
+      if (particleInterval) { clearInterval(particleInterval); particleInterval = null; }
     }
 
     document.getElementById('modeToggle').addEventListener('change', (e) => {
@@ -4966,8 +5010,10 @@
       applyMode();
       trySave();
       if (state.studyMode) {
+        stopGameIntervals();
         setTimeout(() => showQuiz(), 300);
       } else {
+        startGameIntervals();
         renderAchievements();
         updateTugBar();
         updateUI();
@@ -4997,11 +5043,9 @@
       updateTugBar();
       updateUI();
       checkDailyBonus();
-      setInterval(gameTick, 50);
-      setInterval(spawnParticle, 2500);
+      startGameIntervals();
       for (let i = 0; i < 4; i++) setTimeout(spawnParticle, i * 500);
     } else {
-      // Auto-present first card in study mode
       setTimeout(() => showQuiz(), 300);
     }
 
