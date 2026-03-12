@@ -1996,6 +1996,48 @@
         white-space: nowrap;
       }
     }
+
+    /* === STUDY MODE === */
+    body.study-mode .click-section,
+    body.study-mode .shop-section,
+    body.study-mode .achievements-section,
+    body.study-mode #prestigeSection,
+    body.study-mode #tugWrapper,
+    body.study-mode .tug-status-bar,
+    body.study-mode #particles,
+    body.study-mode .year-badge,
+    body.study-mode #statsBtn,
+    body.study-mode .per-second,
+    body.study-mode .prestige-mult,
+    body.study-mode .score-label {
+      display: none !important;
+    }
+
+    body.study-mode .game-container {
+      display: none !important;
+    }
+
+    body.study-mode {
+      padding-bottom: 20px;
+    }
+
+    /* Mode toggles row */
+    .mode-toggles {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin: 8px 0 4px;
+    }
+
+    .mode-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82em;
+      color: #8da9c4;
+      cursor: pointer;
+      user-select: none;
+    }
   </style>
 </head>
 
