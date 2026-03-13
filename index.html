@@ -2039,6 +2039,24 @@
       user-select: none;
     }
 
+    /* Study mode: inline quiz instead of overlay */
+    body.study-mode #quizOverlay {
+      position: static;
+      background: none;
+      padding: 20px 10px;
+      z-index: auto;
+    }
+
+    body.study-mode #quizOverlay.active {
+      display: flex;
+    }
+
+    body.study-mode .quiz-modal {
+      max-width: 650px;
+      margin: 0 auto;
+      animation: none;
+    }
+
     /* === LIGHT THEME === */
     body.light-theme {
       background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f0 50%, #dce2e9 100%);
@@ -5013,6 +5031,7 @@
         stopGameIntervals();
         setTimeout(() => showQuiz(), 300);
       } else {
+        quizOverlay.classList.remove('active');
         startGameIntervals();
         renderAchievements();
         updateTugBar();
