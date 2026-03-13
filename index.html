@@ -4072,6 +4072,9 @@
       const pct = Math.round((masteredCount / activeCount) * 100);
       studyBarFill.style.width = pct + '%';
       studyBarText.textContent = pct + '% Learned';
+      statStreak.textContent = state.streak;
+      statStreak.className = 'streak-val' + (state.streak > 0 ? ' on-streak' : '');
+      statBestStreak.textContent = state.bestStreak > 0 ? `(best: ${state.bestStreak})` : '';
     }
 
     // ========================================================
