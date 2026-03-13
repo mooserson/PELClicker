@@ -5001,6 +5001,7 @@
     function applyMode() {
       document.body.classList.toggle('study-mode', state.studyMode);
       document.body.classList.toggle('light-theme', state.lightTheme);
+      if (state.studyMode) document.body.style.background = '';
       document.querySelector('header h1').textContent = state.studyMode ? 'PEL Flashcards' : 'PEL Clicker';
       const modeToggle = document.getElementById('modeToggle');
       const themeToggle = document.getElementById('themeToggle');
